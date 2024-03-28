@@ -22,7 +22,7 @@ GLuint map, backroomsWallTex, backroomsFloorTex;
 TextureData ttex;  // terrain
 
 // camera
-vec3 cameraPos(60.f, 40.f, 0.f);
+vec3 cameraPos(60.f, 10.f, 0.f);
 vec3 cameraLookAt(0.f, 10.f, 0.f);
 vec3 cameraUp(0.f, 1.f, 0.f);
 vec3 groundBallPos = vec3(0, 0, 0);
@@ -107,12 +107,12 @@ void init(void) {
 void drawGround() {
   glUseProgram(terrainProgram);
   mat4 trans = T(0.f, 0.f, 0.f);
-  mat4 total = cameraMatrix * IdentityMatrix();
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
-                     GL_TRUE, total.m);
-  // set texture as floor texture
-  glUniform1i(glGetUniformLocation(terrainProgram, "tex"), 0);
-  DrawModel(groundModel, terrainProgram, "inPosition", "inNormal", NULL);
+                     GL_TRUE, cameraMatrix.m);
+  // set texture as floor texture (texUnit = 0)
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 0);
+  DrawModel(groundModel, terrainProgram, "inPosition", "inNormal",
+            "inTexCoord");
 }
 
 void drawGroundSphere() {
