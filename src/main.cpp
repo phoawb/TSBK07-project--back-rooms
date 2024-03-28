@@ -11,33 +11,31 @@
 
 // time
 GLfloat t;
-
-mat4 cameraMatrix;
-
+// matrices
+mat4 cameraMatrix, projectionMatrix;
 // vertex array object
-Model *m, *m2, *terrainModel, *groundSphereModel;
+Model *groundModel, *groundSphereModel, *skyboxModel;
 // Reference to shader program
-GLuint terrainProgram;
-GLuint map, backroomsWallTex, backroomsFloorTex;
-TextureData ttex;  // terrain
+GLuint terrainProgram, noShadeProgram;
+// Textures
+GLuint backroomsWallTex, backroomsFloorTex, skyboxTex;
 
 // camera
 vec3 cameraPos(60.f, 10.f, 0.f);
 vec3 cameraLookAt(0.f, 10.f, 0.f);
 vec3 cameraUp(0.f, 1.f, 0.f);
 vec3 groundBallPos = vec3(0, 0, 0);
+
 float theta = -M_PI_2;
 float phi = 0;
 bool isSlow = false;
 
-Model *groundModel, *skyBox, *teaPot;
-
-mat4 projectionMatrix;
 #define kGroundSize 100.0f
 
 /// @brief Load models from files: ground sphere and ground plane
 void loadModels() {
   groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
+  skyboxModel = LoadModelPlus("objects/skybox.obj");
   vec3 vertices[] = {vec3(-kGroundSize, 0.0f, -kGroundSize),
                      vec3(-kGroundSize, 0.0f, kGroundSize),
                      vec3(kGroundSize, -0.0f, -kGroundSize),
@@ -61,6 +59,8 @@ void loadTextures() {
   LoadTGATextureSimple("textures/floor.tga", &backroomsFloorTex);
   glActiveTexture(GL_TEXTURE1);
   LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
+  glActiveTexture(GL_TEXTURE2);
+  LoadTGATextureSimple("textures/skybox2.tga", &skyboxTex);
 }
 
 /// @brief  Calculate the direction of the camera
@@ -69,6 +69,12 @@ void loadTextures() {
 /// @return
 vec3 cameraDirection(float theta, float phi) {
   return (cos(theta) * cos(phi), sin(phi), sin(theta) * cos(phi));
+}
+
+void initShaders() {
+  terrainProgram = loadShaders("terrain.vert", "terrain.frag");
+  noShadeProgram = loadShaders("noShade.vert", "noShade.frag");
+  printError("init shader");
 }
 
 void init(void) {
@@ -80,17 +86,12 @@ void init(void) {
 
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
 
-  theta = 0;
-  phi = 0;
   vec3 angles = cameraDirection(theta, phi);
   cameraLookAt = cameraPos + angles;
-
   cameraMatrix = lookAtv(cameraPos, cameraLookAt, cameraUp);
 
-  // Load and compile shader
-  terrainProgram = loadShaders("terrain.vert", "terrain.frag");
+  initShaders();
   glUseProgram(terrainProgram);
-  printError("init shader");
 
   loadTextures();
   loadModels();
@@ -98,10 +99,42 @@ void init(void) {
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1,
                      GL_TRUE, projectionMatrix.m);
 
-  // Load terrain data
-  LoadTGATextureData("heightmaps/fft-terrain1024c.tga", &ttex);
-  // terrainModel = GenerateTerrain(&ttex);
   printError("init terrain");
+}
+
+void drawSkybox() {
+  glUseProgram(noShadeProgram);
+  // disable depth test and culling
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_CULL_FACE);
+
+  // camera matrix without translation
+  mat4 skyBoxTransform = cameraMatrix;
+
+  // remove translation
+  skyBoxTransform.m[3] = 0;
+  skyBoxTransform.m[7] = 0;
+  skyBoxTransform.m[11] = 0;
+
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "cameraMatrix"), 1,
+                     GL_TRUE, skyBoxTransform.m);
+
+  mat4 trans = T(0.0f, -0.3f, 0.0f);
+  mat4 rot = Ry(0);
+  mat4 total = rot * trans;
+  mat4 scale = S(20.0f, 20.0f, 20.0f);
+  total = total * scale;
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1,
+                     GL_TRUE, total.m);
+  // set texture as skybox texture (texUnit = 2)
+  glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), 2);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1,
+                     GL_TRUE, projectionMatrix.m);
+  DrawModel(skyboxModel, noShadeProgram, "inPosition", NULL, "inTexCoord");
+
+  // enable depth test and culling
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
 }
 
 void drawGround() {
@@ -135,7 +168,7 @@ void display(void) {
   // clear the screen
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // drawTerrain();
+  drawSkybox();
   drawGroundSphere();
   drawGround();
 
