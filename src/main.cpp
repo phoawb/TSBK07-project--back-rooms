@@ -30,10 +30,40 @@ float theta = -M_PI_2;
 float phi = 0;
 bool isSlow = false;
 
+Model *groundModel, *skyBox, *teaPot;
+
 mat4 projectionMatrix;
+#define kGroundSize 100.0f
 
 void loadModels() {
   groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
+  vec3 vertices[] = {vec3(-kGroundSize, 0.0f, -kGroundSize),
+                     vec3(-kGroundSize, 0.0f, kGroundSize),
+                     vec3(kGroundSize, -0.0f, -kGroundSize),
+                     vec3(kGroundSize, -0.0f, kGroundSize)};
+
+  vec3 vertex_normals[] = {vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+                           vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)};
+
+  vec2 tex_coords[] = {vec2(0.0f, 0.0f), vec2(0.0f, 20.0f), vec2(20.0f, 0.0f),
+                       vec2(20.0f, 20.0f)};
+  GLuint indices[] = {0, 1, 2, 1, 3, 2};
+  vec3 colors[] = {(100.f, 0.f, 0.f)};
+  int numVert = 4, numInd = 6;
+  groundModel = LoadDataToModel(vertices, vertex_normals, tex_coords, colors,
+                                indices, numVert, numInd);
+}
+
+void loadTextures() {
+  // Textures
+  glActiveTexture(GL_TEXTURE0);
+  LoadTGATextureSimple("splatmaps/map2.tga", &map);
+  glActiveTexture(GL_TEXTURE1);
+  LoadTGATextureSimple("textures/grass_smol.tga", &grass);
+  glActiveTexture(GL_TEXTURE2);
+  LoadTGATextureSimple("textures/dirt.tga", &dirt);
+  glActiveTexture(GL_TEXTURE3);
+  LoadTGATextureSimple("textures/conc.tga", &conc);
 }
 
 /// @brief Get the height of the terrain at a specific point
@@ -81,68 +111,6 @@ GLfloat coord2height(TextureData *tex, double x, double z) {
   return 0.5 * output;
 }
 
-Model *GenerateTerrain(TextureData *tex) {
-  int vertexCount = tex->width * tex->height;
-  int triangleCount = (tex->width - 1) * (tex->height - 1) * 2;
-  unsigned int x, z;
-
-  vec3 *vertexArray = (vec3 *)malloc(sizeof(GLfloat) * 3 * vertexCount);
-  vec3 *normalArray = (vec3 *)malloc(sizeof(GLfloat) * 3 * vertexCount);
-  vec2 *texCoordArray = (vec2 *)malloc(sizeof(GLfloat) * 2 * vertexCount);
-  GLuint *indexArray = (GLuint *)malloc(sizeof(GLuint) * triangleCount * 3);
-
-  printf("bpp %d\n", tex->bpp);
-  for (x = 0; x < tex->width; x++)
-    for (z = 0; z < tex->height; z++) {
-      // Vertex array. You need to scale this properly
-      vertexArray[(x + z * tex->width)].x = x / 1.0;
-      vertexArray[(x + z * tex->width)].y = coord2height(tex, x, z);
-      vertexArray[(x + z * tex->width)].z = z / 1.0;
-
-      // read neightbor heights using an arbitrary small offset
-      vec3 off = vec3(1.0, 0.0, 1.0);
-      if (x == 0 || x == tex->width - 1) off.x = 0.0;
-      if (z == 0 || z == tex->height - 1) off.z = 0.0;
-      float hL = coord2height(tex, x - off.x, z - off.y);
-      float hR = coord2height(tex, x + off.x, z + off.y);
-      float hD = coord2height(tex, x - off.y, z - off.z);
-      float hU = coord2height(tex, x + off.y, z + off.z);
-
-      // deduce terrain normal
-      vec3 N = normalize(vec3(hL - hR, 2.0, hD - hU));
-      normalArray[(x + z * tex->width)].x = N.x;
-      normalArray[(x + z * tex->width)].y = N.y;
-      normalArray[(x + z * tex->width)].z = N.z;
-
-      // Texture coordinates. You may want to scale them.
-      texCoordArray[(x + z * tex->width)].x =
-          (float)x / tex->width;  // (float)x / tex->width;
-      texCoordArray[(x + z * tex->width)].y =
-          (float)z / tex->height;  // (float)z / tex->height;
-    }
-  for (x = 0; x < tex->width - 1; x++)
-    for (z = 0; z < tex->height - 1; z++) {
-      // Triangle 1
-      indexArray[(x + z * (tex->width - 1)) * 6 + 0] = x + z * tex->width;
-      indexArray[(x + z * (tex->width - 1)) * 6 + 1] = x + (z + 1) * tex->width;
-      indexArray[(x + z * (tex->width - 1)) * 6 + 2] = x + 1 + z * tex->width;
-      // Triangle 2
-      indexArray[(x + z * (tex->width - 1)) * 6 + 3] = x + 1 + z * tex->width;
-      indexArray[(x + z * (tex->width - 1)) * 6 + 4] = x + (z + 1) * tex->width;
-      indexArray[(x + z * (tex->width - 1)) * 6 + 5] =
-          x + 1 + (z + 1) * tex->width;
-    }
-
-  // End of terrain generation
-
-  // Create Model and upload to GPU:
-
-  Model *model = LoadDataToModel(vertexArray, normalArray, texCoordArray, NULL,
-                                 indexArray, vertexCount, triangleCount * 3);
-
-  return model;
-}
-
 vec3 cameraDirection(float theta, float phi) {
   return (cos(theta) * cos(phi), sin(phi), sin(theta) * cos(phi));
 }
@@ -182,6 +150,7 @@ void init(void) {
   glUseProgram(terrainProgram);
   printError("init shader");
 
+  loadTextures();
   loadModels();
 
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1,
@@ -199,16 +168,11 @@ void init(void) {
 
   // Load terrain data
   LoadTGATextureData("heightmaps/fft-terrain1024c.tga", &ttex);
-  terrainModel = GenerateTerrain(&ttex);
+  // terrainModel = GenerateTerrain(&ttex);
   printError("init terrain");
-
-  printf(
-      "Note: The call to DrawModel will report warnings about inNormal not "
-      "existing. This is because inNormal is not used in the shader yet so it "
-      "is optimized away.\n");
 }
 
-void drawGround() {
+void drawTerrain() {
   mat4 total, modelView;
   glUseProgram(terrainProgram);
   // Build matrix
@@ -235,7 +199,8 @@ void drawGroundSphere() {
   float timeFactor = isSlow ? 100 : 1;
   groundBallPos.x += (t - groundBallPos.x) / timeFactor;
   groundBallPos.z += (t - groundBallPos.z) / timeFactor;
-  groundBallPos.y = coord2height(&ttex, groundBallPos.x, groundBallPos.z);
+  // groundBallPos.y = coord2height(&ttex, groundBallPos.x, groundBallPos.z);
+  groundBallPos.y = 0;
   mat4 trans = T(groundBallPos.x, groundBallPos.y, groundBallPos.z);
   mat4 total = cameraMatrix * trans;
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
@@ -246,12 +211,23 @@ void drawGroundSphere() {
             "inTexCoord");
 }
 
+void drawGround() {
+  glUseProgram(terrainProgram);
+  // upload specular exponent
+  mat4 trans = T(0.f, 0.f, 0.f);
+  mat4 total = cameraMatrix * IdentityMatrix();
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
+                     GL_TRUE, total.m);
+  DrawModel(groundModel, terrainProgram, "inPosition", "inNormal", NULL);
+}
+
 void display(void) {
   // clear the screen
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  drawGround();
+  // drawTerrain();
   drawGroundSphere();
+  drawGround();
 
   printError("display");
 
@@ -326,7 +302,7 @@ int main(int argc, char **argv) {
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
   glutInitContextVersion(3, 2);
   glutInitWindowSize(600, 600);
-  glutCreateWindow("TSBK07 Lab 4");
+  glutCreateWindow("TSBK07 - Project");
   glutDisplayFunc(display);
   init();
   glutTimerFunc(20, &onTimer, 0);
