@@ -77,29 +77,32 @@ void initShaders() {
   printError("init shader");
 }
 
+/// @brief Upload the projection matrix to the shader programs
+void uploadProjectionMatrix() {
+  glUseProgram(terrainProgram);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1,
+                     GL_TRUE, projectionMatrix.m);
+  glUseProgram(noShadeProgram);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1,
+                     GL_TRUE, projectionMatrix.m);
+}
+
 void init(void) {
-  // GL inits
   glClearColor(0.2, 0.2, 0.5, 0);
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   printError("GL inits");
 
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
-
   vec3 angles = cameraDirection(theta, phi);
   cameraLookAt = cameraPos + angles;
   cameraMatrix = lookAtv(cameraPos, cameraLookAt, cameraUp);
 
   initShaders();
-  glUseProgram(terrainProgram);
-
+  uploadProjectionMatrix();
   loadTextures();
   loadModels();
-
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1,
-                     GL_TRUE, projectionMatrix.m);
-
-  printError("init terrain");
+  printError("init");
 }
 
 void drawSkybox() {
