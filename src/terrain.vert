@@ -6,7 +6,6 @@ in vec2 inTexCoord;
 out vec2 texCoord;
 out vec3 exNormal;
 
-// NY
 uniform mat4 projMatrix;
 uniform mat4 mdlMatrix;
 
