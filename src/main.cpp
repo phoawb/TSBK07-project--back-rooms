@@ -10,6 +10,7 @@
 #include "LoadTGA.h"
 #include "MicroGlut.h"
 #include "VectorUtils4.h"
+#include "boxes.h"
 #include "vector"
 
 // time
@@ -29,7 +30,7 @@ vec3 cameraLookAt(0.f, 10.f, 0.f);
 vec3 cameraUp(0.f, 1.f, 0.f);
 vec3 groundBallPos = vec3(0, 0, 0);
 
-float theta = -M_PI_2;
+float theta = -2 * M_PI_2;
 float phi = 0;
 bool isSlow = false;
 
@@ -42,67 +43,6 @@ struct BoxManager {
 };
 
 BoxManager boxManager;
-
-/// @brief Create a box model
-Model *getBoxModel(float width = 10.0f, float height = 10.0f, float depth = 10.0f) {
-  vec3 vertices[] = {// front
-                     vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, width), vec3(0.0f, height, 0.0f),
-                     vec3(0.0f, height, width),
-                     // back
-                     vec3(depth, 0.0f, 0.0f), vec3(depth, 0.0f, width), vec3(depth, height, 0.0f),
-                     vec3(depth, height, width),
-                     // right
-                     vec3(0.0f, 0.0f, width), vec3(depth, 0.0f, width), vec3(0.0f, height, width),
-                     vec3(depth, height, width),
-                     // left
-                     vec3(0.0f, 0.0f, 0.0f), vec3(depth, 0.0f, 0.0f), vec3(0.0f, height, 0.0f),
-                     vec3(depth, height, 0.0f),
-                     // top
-                     vec3(0.0f, height, 0.0f), vec3(0.0f, height, width), vec3(depth, height, 0.0f),
-                     vec3(depth, height, width),
-                     // bottom
-                     vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, width), vec3(depth, 0.0f, 0.0f),
-                     vec3(depth, 0.0f, width)};
-
-  vec3 vertex_normals[] = {// front
-                           vec3(-1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
-                           vec3(-1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
-                           // back
-                           vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f),
-                           vec3(1.0f, 0.0f, 0.0f),
-                           // right
-                           vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
-                           vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
-                           // left
-                           vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-                           vec3(0.0f, 0.0f, 1.0f),
-                           // top
-                           vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
-                           vec3(0.0f, 1.0f, 0.0f),
-                           // bottom
-                           vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f),
-                           vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)};
-
-  vec2 tex_coords[] = {vec2(0.0f, 0.0f), vec2(0.0f, 20.0f), vec2(20.0f, 0.0f), vec2(20.0f, 20.0f)};
-  GLuint indices[] = {// front
-                      0, 1, 2, 1, 3, 2,
-                      // back
-                      4, 6, 5, 6, 7, 5,
-                      // right
-                      8, 9, 11, 8, 11, 10,
-                      // left
-                      15, 13, 12, 12, 14, 15,
-                      // top
-                      16, 17, 18, 17, 19, 18,
-                      // bottom
-                      20, 22, 21, 21, 22, 23};
-
-  vec3 colors[] = {(100.f, 0.f, 0.f)};
-  int numVert = 24, numInd = 36;
-  Model *model =
-      LoadDataToModel(vertices, vertex_normals, tex_coords, colors, indices, numVert, numInd);
-  return model;
-}
 
 Model *getGroundModel() {
   vec3 vertices[] = {vec3(-kGroundSize, 0.0f, -kGroundSize), vec3(-kGroundSize, 0.0f, kGroundSize),
@@ -120,17 +60,23 @@ Model *getGroundModel() {
   return model;
 }
 
+void generateBoxes() {
+  // wall 1
+  boxManager.boxes.push_back(getBoxModel(30, 30, 2));
+  boxManager.translations.push_back(T(0, 0, 15));
+  boxManager.rotations.push_back(Ry(0));
+  // wall 2
+  boxManager.boxes.push_back(getBoxModel(30, 30, 2));
+  boxManager.translations.push_back(T(0, 0, 15));
+  boxManager.rotations.push_back(Ry(M_PI / 2));
+}
+
 /// @brief Load models from files: ground sphere and ground plane
 void loadModels() {
   groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
   skyboxModel = LoadModelPlus("objects/skybox.obj");
   groundModel = getGroundModel();
-  // Get 2 box models and put them in the boxManager
-  for (int i = 0; i < 3; i++) {
-    boxManager.boxes.push_back(getBoxModel());
-    boxManager.translations.push_back(T(0, i * 15.f, 0));
-    boxManager.rotations.push_back(Ry(0));
-  }
+  generateBoxes();
 }
 
 /// @brief Load textures from file
@@ -269,7 +215,7 @@ void drawGround() {
   DrawModel(groundModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
-void drawWall(Model *model, mat4 trans, mat4 rot) {
+void drawBox(Model *model, mat4 trans, mat4 rot) {
   glUseProgram(terrainProgram);
   mat4 total = cameraMatrix * trans * rot;
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
@@ -294,17 +240,22 @@ void drawGroundSphere() {
   DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
+void drawBoxes() {
+  for (int i = 0; i < boxManager.boxes.size(); i++) {
+    drawBox(boxManager.boxes[i], boxManager.translations[i],
+            boxManager.rotations[i]);
+  }
+}
+
 void display(void) {
   // clear the screen
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // drawSkybox();
+  drawSkybox();
   drawGroundSphere();
   drawGround();
-  // drawWall();
-  for (int i = 0; i < boxManager.boxes.size(); i++) {
-    drawWall(boxManager.boxes[i], boxManager.translations[i], boxManager.rotations[i]);
-  }
+  drawBoxes();
+
 
   printError("display");
 
