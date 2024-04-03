@@ -3,7 +3,6 @@
 // uses framework Cocoa
 // uses framework OpenGL
 #define MAIN
-#include <vector>
 
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
