@@ -20,7 +20,7 @@ Model *groundModel, *groundSphereModel, *skyboxModel;
 // Reference to shader program
 GLuint terrainProgram, noShadeProgram;
 // Textures
-GLuint backroomsWallTex, backroomsFloorTex, skyboxTex;
+GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
 
 // camera
 vec3 cameraPos(60.f, 10.f, 0.f);
@@ -60,6 +60,8 @@ void loadTextures() {
   LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
   glActiveTexture(GL_TEXTURE2);
   LoadTGATextureSimple("textures/skybox.tga", &skyboxTex);
+  glActiveTexture(GL_TEXTURE3);
+  LoadTGATextureSimple("textures/grass.tga", &grassTex);
 }
 
 /// @brief  Calculate the direction of the camera
@@ -108,6 +110,7 @@ void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional = false) {
 void uploadLights() {
   glUseProgram(terrainProgram);
   int lightCount = getLightCount(lightManager);
+  glUniform1i(glGetUniformLocation(terrainProgram, "lightCount"), lightCount);
   glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesColors"), lightCount,
                &lightManager.lightSourcesColors[0].x);
   glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesDirectionsPositions"), lightCount,
@@ -129,6 +132,13 @@ void init(void) {
 
   initShaders();
   uploadProjectionMatrix();
+
+  placeLight(vec3(100, 0, 0), vec3(1, 0, 0));
+  placeLight(vec3(0, 100, 0), vec3(0, 1, 0));
+  placeLight(vec3(0, 0, 100), vec3(0, 0, 1));
+  uploadLights();
+  printError("init light");
+
   loadTextures();
   loadModels();
   printError("init");
@@ -172,6 +182,7 @@ void drawGround() {
   glUseProgram(terrainProgram);
   mat4 trans = T(0.f, 0.f, 0.f);
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, cameraMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, trans.m);
   // set texture as floor texture (texUnit = 0)
   glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 0);
   DrawModel(groundModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
@@ -186,8 +197,10 @@ void drawGroundSphere() {
   mat4 trans = T(groundBallPos.x, groundBallPos.y, groundBallPos.z);
   mat4 total = cameraMatrix * trans;
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, trans.m);
+
   // set texture as wall texture
-  glUniform1i(glGetUniformLocation(terrainProgram, "tex"), 1);
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 0);
   DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
