@@ -9,6 +9,7 @@
 #include "LoadTGA.h"
 #include "MicroGlut.h"
 #include "boxes.h"
+#include "ecs.hpp"
 #include "ground.h"
 #include "vector"
 
@@ -50,6 +51,8 @@ struct LightManager {
 
 ObjectManager objectManager;
 LightManager lightManager;
+
+Coordinator gCoordinator;
 
 void generateBoxes() {
   // wall 1
@@ -105,8 +108,8 @@ void loadTextures() {
 vec3 cameraDirection(float theta, float phi) { return (cos(theta) * cos(phi), sin(phi), sin(theta) * cos(phi)); }
 
 void initShaders() {
-  terrainProgram = loadShaders("terrain.vert", "terrain.frag");
-  noShadeProgram = loadShaders("noShade.vert", "noShade.frag");
+  terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
+  noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
   printError("init shader");
 }
 
@@ -258,7 +261,6 @@ void mouse(int x, int y) {
 void checkInput() {
   float cameraSpeed = 0.6f;     // Speed of camera movement
   float rotationSpeed = 0.02f;  // Speed of camera rotation
-  bool piThetaUpdated = false;
 
   // Update camera position based on WASD keys
   vec3 forward = normalize(cameraLookAt - cameraPos);   // Direction camera is facing

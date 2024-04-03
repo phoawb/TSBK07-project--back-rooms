@@ -1,29 +1,40 @@
 # set this variable to the director in which you saved the common files
-commondir = ../common/
-libdir = ../lib/
+COMMONDIR = ../common/
+LIBDIR = lib/
 
-dependencies = \
-$(commondir)GL_utilities.c \
-$(commondir)LoadTGA.c \
-$(commondir)/MicroGlut.m \
-$(libdir)/boxes.cpp \
-$(libdir)/boxes.h \
-$(libdir)/ground.cpp \
-$(libdir)/ground.h
 
-flags = -Wall -DGL_GLEXT_PROTOTYPES -lm -lstdc++ -framework OpenGL -framework Cocoa -framework CoreGraphics
+CC = gcc
+CXX = g++
+CFLAGS = -Wall -DGL_GLEXT_PROTOTYPES
+CXXFLAGS = $(CFLAGS) -std=c++17
+LDFLAGS = -lm -framework OpenGL -framework Cocoa -framework CoreGraphics
 
-main : main.cpp $(dependencies)
-	gcc -o main \
-	-I $(commondir) \
-	-I $(libdir) \
-	main.cpp \
-	$(commondir)GL_utilities.c \
-	$(commondir)LoadTGA.c \
-	$(commondir)/MicroGlut.m \
-	$(libdir)/boxes.cpp \
-	$(libdir)/ground.cpp \
-	$(flags)
+C_SOURCES = \
+$(COMMONDIR)GL_utilities.c \
+$(COMMONDIR)LoadTGA.c \
+$(COMMONDIR)/MicroGlut.m \
+
+CPP_SOURCES = \
+$(LIBDIR)/boxes.cpp \
+$(LIBDIR)/ground.cpp \
+
+# Object files
+C_OBJECTS := $(C_SOURCES:.c=.o)
+CPP_OBJECTS := $(CPP_SOURCES:.cpp=.o)
+
+main: main.o $(C_OBJECTS) $(CPP_OBJECTS)
+	$(CXX) -o main main.o $(C_OBJECTS) $(CPP_OBJECTS) $(LDFLAGS)
+
+main.o: main.cpp
+	$(CXX) $(CXXFLAGS) -I $(COMMONDIR) -I $(LIBDIR) -c main.cpp -o main.o
+
+# Pattern rule for C source files
+%.o: %.c
+	$(CC) $(CFLAGS) -I $(COMMONDIR) -I $(LIBDIR) -c $< -o $@
+
+# Pattern rule for C++ source files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -I $(COMMONDIR) -I $(LIBDIR) -c $< -o $@
 
 clean :
 	rm main
