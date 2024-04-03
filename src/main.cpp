@@ -35,8 +35,6 @@ float theta = -2 * M_PI_2;
 float phi = 0;
 bool isSlow = false;
 
-#define kGroundSize 50.0f
-
 struct BoxManager {
   std::vector<Model *> boxes;
   std::vector<mat4> translations;
