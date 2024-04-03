@@ -17,10 +17,10 @@ GLfloat t;
 // matrices
 mat4 cameraMatrix, projectionMatrix;
 // vertex array object
-Model *groundSphereModel, *skyboxModel, *groundModel, *boxModel;
+Model *groundSphereModel, *skyboxModel, *groundModel;
 // Reference to shader program
 GLuint terrainProgram, noShadeProgram;
-// Textures
+// Reference to textures
 GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
 
 // camera
@@ -33,10 +33,12 @@ float theta = -2 * M_PI_2;
 float phi = 0;
 bool isSlow = false;
 
-struct BoxManager {
-  std::vector<Model *> boxes;
+struct ObjectManager {
+  std::vector<Model *> objects;
   std::vector<mat4> translations;
   std::vector<mat4> rotations;
+  std::vector<GLuint> texUnits;
+  std::vector<GLuint *> programs;
 };
 
 struct LightManager {
@@ -46,26 +48,34 @@ struct LightManager {
   int getCount() { return lightSourcesColors.size(); }
 };
 
-BoxManager boxManager;
+ObjectManager objectManager;
 LightManager lightManager;
 
 void generateBoxes() {
   // wall 1
-  boxManager.boxes.push_back(getBoxModel(100, 50, 2));
-  boxManager.translations.push_back(T(-50, 0, -50));
-  boxManager.rotations.push_back(Ry(0));
+  objectManager.objects.push_back(getBoxModel(100, 50, 2));
+  objectManager.translations.push_back(T(-50, 0, -50));
+  objectManager.rotations.push_back(Ry(0));
+  objectManager.programs.push_back(&terrainProgram);
+  objectManager.texUnits.push_back(1);
   // wall 2
-  boxManager.boxes.push_back(getBoxModel(100, 50, 2));
-  boxManager.translations.push_back(T(-50, 0, 50));
-  boxManager.rotations.push_back(Ry(M_PI / 2));
+  objectManager.objects.push_back(getBoxModel(100, 50, 2));
+  objectManager.translations.push_back(T(-50, 0, 50));
+  objectManager.rotations.push_back(Ry(M_PI / 2));
+  objectManager.programs.push_back(&terrainProgram);
+  objectManager.texUnits.push_back(1);
   // wall 3
-  boxManager.boxes.push_back(getBoxModel(100, 50, 2));
-  boxManager.translations.push_back(T(-50, 0, -50));
-  boxManager.rotations.push_back(Ry(M_PI / 2));
+  objectManager.objects.push_back(getBoxModel(100, 50, 2));
+  objectManager.translations.push_back(T(-50, 0, -50));
+  objectManager.rotations.push_back(Ry(M_PI / 2));
+  objectManager.programs.push_back(&terrainProgram);
+  objectManager.texUnits.push_back(1);
   // ceiling
-  boxManager.boxes.push_back(getBoxModel(100, 2, 100));
-  boxManager.translations.push_back(T(-50, 50, -50));
-  boxManager.rotations.push_back(Ry(0));
+  objectManager.objects.push_back(getBoxModel(100, 2, 100));
+  objectManager.translations.push_back(T(-50, 50, -50));
+  objectManager.rotations.push_back(Ry(0));
+  objectManager.programs.push_back(&terrainProgram);
+  objectManager.texUnits.push_back(1);
 }
 
 /// @brief Load models from files: ground sphere and ground plane
@@ -192,22 +202,10 @@ void drawGround() {
   DrawModel(groundModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
-void drawBox(Model *model, mat4 trans, mat4 rot) {
-  glUseProgram(terrainProgram);
-  mat4 m2w = trans * rot;
-  mat4 total = cameraMatrix * m2w;
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, m2w.m);
-  // set texture as wall texture (texUnit = 1)
-  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 1);
-  DrawModel(model, terrainProgram, "inPosition", "inNormal", "inTexCoord");
-}
-
 void drawGroundSphere() {
   glUseProgram(terrainProgram);
-  float timeFactor = isSlow ? 100 : 1;
-  groundBallPos.x += (t - groundBallPos.x) / timeFactor;
-  groundBallPos.z += (t - groundBallPos.z) / timeFactor;
+  groundBallPos.x += (t - groundBallPos.x);
+  groundBallPos.z += (t - groundBallPos.z);
   groundBallPos.y = 0;
   mat4 trans = T(groundBallPos.x, groundBallPos.y, groundBallPos.z);
   mat4 total = cameraMatrix * trans;
@@ -219,9 +217,21 @@ void drawGroundSphere() {
   DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
-void drawBoxes() {
-  for (int i = 0; i < boxManager.boxes.size(); i++) {
-    drawBox(boxManager.boxes[i], boxManager.translations[i], boxManager.rotations[i]);
+void drawObjects() {
+  for (int i = 0; i < objectManager.objects.size(); i++) {
+    Model *model = objectManager.objects[i];
+    mat4 trans = objectManager.translations[i];
+    mat4 rot = objectManager.rotations[i];
+    GLuint program = *objectManager.programs[i];
+    GLuint texUnit = objectManager.texUnits[i];
+    glUseProgram(program);
+    mat4 m2w = trans * rot;
+    mat4 total = cameraMatrix * m2w;
+    glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
+    glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, m2w.m);
+    // set texture as wall texture (texUnit = 1)
+    glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), texUnit);
+    DrawModel(model, terrainProgram, "inPosition", "inNormal", "inTexCoord");
   }
 }
 
@@ -232,7 +242,7 @@ void display(void) {
   drawSkybox();
   drawGroundSphere();
   drawGround();
-  drawBoxes();
+  drawObjects();
 
   printError("display");
 
