@@ -138,7 +138,7 @@ void loadTextures() {
   glActiveTexture(GL_TEXTURE0);
   LoadTGATextureSimple("textures/floor.tga", &backroomsFloorTex);
   glActiveTexture(GL_TEXTURE1);
-  LoadTGATextureSimple("textures/grass.tga", &backroomsWallTex);
+  LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
   glActiveTexture(GL_TEXTURE2);
   LoadTGATextureSimple("textures/skybox.tga", &skyboxTex);
   glActiveTexture(GL_TEXTURE3);
@@ -194,7 +194,7 @@ void uploadLights() {
   glUniform1i(glGetUniformLocation(terrainProgram, "lightCount"), lightCount);
   glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesColors"), lightCount,
                &lightManager.lightSourcesColors[0].x);
-  glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesDirectionsPositions"), lightCount,
+  glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesDirPos"), lightCount,
                &lightManager.lightSourcesDirectionsPositions[0].x);
   glUniform1iv(glGetUniformLocation(terrainProgram, "isDirectional"), lightCount,
                &lightManager.isDirectional[0]);
@@ -214,9 +214,9 @@ void init(void) {
   initShaders();
   uploadProjectionMatrix();
 
-  placeLight(vec3(100, 0, 0), vec3(1, 0, 0));
-  placeLight(vec3(0, 100, 0), vec3(0, 1, 0));
-  placeLight(vec3(0, 0, 100), vec3(0, 0, 1));
+  placeLight(vec3(50, 0, 0), vec3(1, 0, 0));
+  placeLight(vec3(25, 0, 0), vec3(0, 1, 0));
+  placeLight(vec3(10, 0, 0), vec3(0, 0, 1));
   uploadLights();
   printError("init light");
 
@@ -274,7 +274,7 @@ void drawWall(Model *model, mat4 trans, mat4 rot) {
   mat4 total = cameraMatrix * trans * rot;
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
   // set texture as wall texture (texUnit = 1)
-  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 1);
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 3);
   DrawModel(model, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
@@ -290,7 +290,7 @@ void drawGroundSphere() {
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, trans.m);
 
   // set texture as wall texture
-  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 0);
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 3);
   DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
@@ -345,8 +345,10 @@ void checkInput() {
   if (glutKeyIsDown('i')) phi += rotationSpeed;
   if (glutKeyIsDown('k')) phi -= rotationSpeed;
 
-  if (glutKeyIsDown(GLUT_KEY_SPACE)) {
-    isSlow = !isSlow;
+  if (glutKeyIsDown(GLUT_KEY_UP)) {
+    cameraPos.y += cameraSpeed;
+  } else if (glutKeyIsDown(GLUT_KEY_DOWN)) {
+    cameraPos.y -= cameraSpeed;
   }
 
   // Clamp the rotation angle to be within reasonable values
