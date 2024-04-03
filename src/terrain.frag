@@ -14,13 +14,13 @@ uniform vec3 lightSourcesColors[MAX_LIGHTS];
 uniform int isDirectional[MAX_LIGHTS];
 
 void main(void) {
-    vec3 ambientColor = vec3(0.2); // Ambient color if no lights are affecting the fragment
+    vec3 ambientColor = vec3(0.3); // Ambient color if no lights are affecting the fragment
     vec3 finalColor = ambientColor; // Start with ambient color
 
     for (int i = 0; i < lightCount; ++i) {
         if (isDirectional[i] == 0) { // Assuming 0 for point lights
             float dist = distance(exWorldPos, lightSourcesDirPos[i]);
-            vec3 lightColor = lightSourcesColors[i];
+            vec3 lightColor = lightSourcesColors[i] * 10.0;
             
             // Simple attenuation based on distance
             float attenuation = 1.0 / (1.0 + dist);

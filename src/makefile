@@ -2,7 +2,15 @@
 commondir = ../common/
 libdir = ../lib/
 
-dependencies = $(commondir)GL_utilities.c $(commondir)LoadTGA.c $(commondir)/MicroGlut.m $(libdir)/boxes.cpp $(libdir)/boxes.h
+dependencies = \
+$(commondir)GL_utilities.c \
+$(commondir)LoadTGA.c \
+$(commondir)/MicroGlut.m \
+$(libdir)/boxes.cpp \
+$(libdir)/boxes.h \
+$(libdir)/ground.cpp \
+$(libdir)/ground.h
+
 flags = -Wall -DGL_GLEXT_PROTOTYPES -lm -lstdc++ -framework OpenGL -framework Cocoa -framework CoreGraphics
 
 main : main.cpp $(dependencies)
@@ -14,6 +22,7 @@ main : main.cpp $(dependencies)
 	$(commondir)LoadTGA.c \
 	$(commondir)/MicroGlut.m \
 	$(libdir)/boxes.cpp \
+	$(libdir)/ground.cpp \
 	$(flags)
 
 clean :
