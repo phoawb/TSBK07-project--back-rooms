@@ -1,7 +1,3 @@
-// Lab 4, terrain generation
-
-// uses framework Cocoa
-// uses framework OpenGL
 #define MAIN
 
 #include "GL_utilities.h"
@@ -9,8 +5,11 @@
 #include "LoadTGA.h"
 #include "MicroGlut.h"
 #include "boxes.h"
+#include "camera.hpp"
+#include "cameraControlSystem.hpp"
 #include "ecs.hpp"
 #include "ground.h"
+#include "renderSystem.hpp"
 #include "vector"
 
 // time
@@ -23,6 +22,9 @@ Model *groundSphereModel, *skyboxModel, *groundModel;
 GLuint terrainProgram, noShadeProgram;
 // Reference to textures
 GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
+
+std::__1::shared_ptr<RenderSystem> renderSystem;
+std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
 
 // camera
 vec3 cameraPos(60.f, 10.f, 0.f);
@@ -81,46 +83,6 @@ void generateBoxes() {
   objectManager.texUnits.push_back(1);
 }
 
-/// @brief Load models from files: ground sphere and ground plane
-void loadModels() {
-  groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
-  skyboxModel = LoadModelPlus("objects/skybox.obj");
-  groundModel = getGroundModel(50.0);
-  generateBoxes();
-}
-
-/// @brief Load textures from file
-void loadTextures() {
-  glActiveTexture(GL_TEXTURE0);
-  LoadTGATextureSimple("textures/floor.tga", &backroomsFloorTex);
-  glActiveTexture(GL_TEXTURE1);
-  LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
-  glActiveTexture(GL_TEXTURE2);
-  LoadTGATextureSimple("textures/skybox.tga", &skyboxTex);
-  glActiveTexture(GL_TEXTURE3);
-  LoadTGATextureSimple("textures/grass.tga", &grassTex);
-}
-
-/// @brief  Calculate the direction of the camera
-/// @param theta
-/// @param phi
-/// @return
-vec3 cameraDirection(float theta, float phi) { return (cos(theta) * cos(phi), sin(phi), sin(theta) * cos(phi)); }
-
-void initShaders() {
-  terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
-  noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
-  printError("init shader");
-}
-
-/// @brief Upload the projection matrix to the shader programs
-void uploadProjectionMatrix() {
-  glUseProgram(terrainProgram);
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-  glUseProgram(noShadeProgram);
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-}
-
 int getLightCount(const LightManager &lightManager) { return lightManager.lightSourcesColors.size(); }
 
 void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional = false) {
@@ -130,7 +92,46 @@ void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional = false) {
   lightManager.isDirectional.push_back(isDir);
 }
 
-void uploadLights() {
+void init(void) {
+  glClearColor(0.2, 0.2, 0.5, 0);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+  printError("GL inits");
+
+  // set up projection matrix and camera matrix
+  projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
+  vec3 angles = cameraDirection(theta, phi);
+
+  // Clamp the rotation angle to be within reasonable values
+  phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, phi));
+  // make sure theta stays within 0 to 2pi and is positive
+  theta = fmod(theta, 2 * M_PI);  // fmax(0.f, fmod(theta, 2 * M_PI));
+
+  // Calculate new camera target based on orientation
+  cameraLookAt = cameraPos + angles;
+  cameraLookAt.x = cameraPos.x + cos(phi) * cos(theta);
+  cameraLookAt.y = cameraPos.y + sin(phi);
+  cameraLookAt.z = cameraPos.z + cos(phi) * sin(theta);
+
+  // Finally, update the camera matrix with the new position and target
+  cameraMatrix = lookAtv(cameraPos, cameraLookAt, cameraUp);
+
+  // init shaders
+  terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
+  noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
+  printError("init shader");
+  // end init shaders
+
+  // Upload projection matrix to shader
+  glUseProgram(terrainProgram);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+  glUseProgram(noShadeProgram);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+  // end projection upload
+
+  placeLight(vec3(0, 40, 25), vec3(1, 1, 1));
+
+  // Upload light data to shader
   glUseProgram(terrainProgram);
   int lightCount = getLightCount(lightManager);
   glUniform1i(glGetUniformLocation(terrainProgram, "lightCount"), lightCount);
@@ -139,28 +140,28 @@ void uploadLights() {
   glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesDirPos"), lightCount,
                &lightManager.lightSourcesDirectionsPositions[0].x);
   glUniform1iv(glGetUniformLocation(terrainProgram, "isDirectional"), lightCount, &lightManager.isDirectional[0]);
-}
+  // end light upload
 
-void init(void) {
-  glClearColor(0.2, 0.2, 0.5, 0);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  printError("GL inits");
-
-  projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
-  vec3 angles = cameraDirection(theta, phi);
-  cameraLookAt = cameraPos + angles;
-  cameraMatrix = lookAtv(cameraPos, cameraLookAt, cameraUp);
-
-  initShaders();
-  uploadProjectionMatrix();
-
-  placeLight(vec3(0, 40, 25), vec3(1, 1, 1));
-  uploadLights();
   printError("init light");
 
-  loadTextures();
-  loadModels();
+  // Load textures from file
+  glActiveTexture(GL_TEXTURE0);
+  LoadTGATextureSimple("textures/floor.tga", &backroomsFloorTex);
+  glActiveTexture(GL_TEXTURE1);
+  LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
+  glActiveTexture(GL_TEXTURE2);
+  LoadTGATextureSimple("textures/skybox.tga", &skyboxTex);
+  glActiveTexture(GL_TEXTURE3);
+  LoadTGATextureSimple("textures/grass.tga", &grassTex);
+  // end load textures
+
+  // load models
+  groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
+  skyboxModel = LoadModelPlus("objects/skybox.obj");
+  groundModel = getGroundModel(50.0);
+  generateBoxes();
+  // end load models
+
   printError("init");
 }
 void drawSkybox() {
@@ -247,6 +248,14 @@ void display(void) {
   drawGround();
   drawObjects();
 
+  cameraControlSystem->Update(0.0f);
+  renderSystem->Update();
+
+  // TODO: remove this hack
+  auto &cameraTransform = gCoordinator.GetComponent<Transform>(0);
+  auto &camera = gCoordinator.GetComponent<Camera>(0);
+  cameraMatrix = lookAtv(cameraTransform.position, camera.cameraLookAt, camera.cameraUp);
+
   printError("display");
 
   glutSwapBuffers();
@@ -258,57 +267,11 @@ void mouse(int x, int y) {
   // y);
 }
 
-void checkInput() {
-  float cameraSpeed = 0.6f;     // Speed of camera movement
-  float rotationSpeed = 0.02f;  // Speed of camera rotation
-
-  // Update camera position based on WASD keys
-  vec3 forward = normalize(cameraLookAt - cameraPos);   // Direction camera is facing
-  forward.y = 0;                                        // Remove y-component
-  forward = normalize(forward);                         // Normalize since we altered the length
-  vec3 rightDir = normalize(cross(forward, cameraUp));  // Right direction relative to camera's forward
-
-  // Forward and backward
-  if (glutKeyIsDown('w')) cameraPos += forward * cameraSpeed;
-  if (glutKeyIsDown('s')) cameraPos -= forward * cameraSpeed;
-  // Right and left (strafe)
-  if (glutKeyIsDown('a')) cameraPos -= rightDir * cameraSpeed;
-  if (glutKeyIsDown('d')) cameraPos += rightDir * cameraSpeed;
-
-  // Update camera orientation based on IJKL keys
-  // Rotate left and right (around the up axis)
-  if (glutKeyIsDown('j')) theta -= rotationSpeed;
-  if (glutKeyIsDown('l')) theta += rotationSpeed;
-
-  // Rotate up and down (around the right axis)
-  if (glutKeyIsDown('i')) phi += rotationSpeed;
-  if (glutKeyIsDown('k')) phi -= rotationSpeed;
-
-  if (glutKeyIsDown(GLUT_KEY_UP)) {
-    cameraPos.y += cameraSpeed;
-  } else if (glutKeyIsDown(GLUT_KEY_DOWN)) {
-    cameraPos.y -= cameraSpeed;
-  }
-
-  // Clamp the rotation angle to be within reasonable values
-  phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, phi));
-  // make sure theta stays within 0 to 2pi and is positive
-  theta = fmod(theta, 2 * M_PI);  // fmax(0.f, fmod(theta, 2 * M_PI));
-
-  // Calculate new camera target based on orientation
-  cameraLookAt.x = cameraPos.x + cos(phi) * cos(theta);
-  cameraLookAt.y = cameraPos.y + sin(phi);
-  cameraLookAt.z = cameraPos.z + cos(phi) * sin(theta);
-
-  // Finally, update the camera matrix with the new position and target
-  cameraMatrix = lookAtv(cameraPos, cameraLookAt, cameraUp);
-}
-
 void onTimer(int value) {
   // pass time
   t = (GLfloat)glutGet(GLUT_ELAPSED_TIME) / 200;
   // check input
-  checkInput();
+  // checkInput();
 
   glutPostRedisplay();
   glutTimerFunc(20, &onTimer, value);  // 50 FPS
@@ -321,6 +284,42 @@ int main(int argc, char **argv) {
   glutInitWindowSize(600, 600);
   glutCreateWindow("TSBK07 - Project");
   glutDisplayFunc(display);
+  // Start ECS stuff
+  gCoordinator.Init();
+
+  gCoordinator.RegisterComponent<Renderable>();
+  gCoordinator.RegisterComponent<Transform>();
+  gCoordinator.RegisterComponent<Camera>();
+
+  cameraControlSystem = gCoordinator.RegisterSystem<CameraControlSystem>();
+  {
+    Signature signature;
+    signature.set(gCoordinator.GetComponentType<Camera>());
+    signature.set(gCoordinator.GetComponentType<Transform>());
+    gCoordinator.SetSystemSignature<CameraControlSystem>(signature);
+  }
+
+  cameraControlSystem->Init();
+
+  renderSystem = gCoordinator.RegisterSystem<RenderSystem>();
+  {
+    Signature signature;
+    signature.set(gCoordinator.GetComponentType<Renderable>());
+    signature.set(gCoordinator.GetComponentType<Transform>());
+    gCoordinator.SetSystemSignature<RenderSystem>(signature);
+  }
+
+  renderSystem->Init();
+
+  std::vector<Entity> entities(10);
+
+  for (auto &entity : entities) {
+    entity = gCoordinator.CreateEntity();
+    gCoordinator.AddComponent(entity, Transform{.position = vec3(0.0f, 0.0f, 500.0f)});
+    gCoordinator.AddComponent(entity, Renderable{.model = groundModel, .program = terrainProgram, .texUnit = 0});
+  }
+
+  //  End ECS stuff
   init();
   glutTimerFunc(20, &onTimer, 0);
   glutPassiveMotionFunc(mouse);

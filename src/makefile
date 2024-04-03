@@ -17,6 +17,8 @@ $(COMMONDIR)/MicroGlut.m \
 CPP_SOURCES = \
 $(LIBDIR)/boxes.cpp \
 $(LIBDIR)/ground.cpp \
+$(LIBDIR)/renderSystem.cpp \
+$(LIBDIR)/cameraControlSystem.cpp \
 
 # Object files
 C_OBJECTS := $(C_SOURCES:.c=.o)
