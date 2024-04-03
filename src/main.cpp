@@ -8,7 +8,6 @@
 #include "LittleOBJLoader.h"
 #include "LoadTGA.h"
 #include "MicroGlut.h"
-#include "VectorUtils4.h"
 #include "boxes.h"
 #include "ground.h"
 #include "vector"
