@@ -3,6 +3,8 @@
 // uses framework Cocoa
 // uses framework OpenGL
 #define MAIN
+#include <vector>
+
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
 #include "LoadTGA.h"
@@ -20,7 +22,7 @@ Model *groundSphereModel, *skyboxModel, *groundModel, *boxModel;
 // Reference to shader program
 GLuint terrainProgram, noShadeProgram;
 // Textures
-GLuint backroomsWallTex, backroomsFloorTex, skyboxTex;
+GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
 
 // camera
 vec3 cameraPos(60.f, 10.f, 0.f);
@@ -43,21 +45,18 @@ struct BoxManager {
 BoxManager boxManager;
 
 Model *getGroundModel() {
-  vec3 vertices[] = {vec3(-kGroundSize, 0.0f, -kGroundSize),
-                     vec3(-kGroundSize, 0.0f, kGroundSize),
-                     vec3(kGroundSize, -0.0f, -kGroundSize),
-                     vec3(kGroundSize, -0.0f, kGroundSize)};
+  vec3 vertices[] = {vec3(-kGroundSize, 0.0f, -kGroundSize), vec3(-kGroundSize, 0.0f, kGroundSize),
+                     vec3(kGroundSize, -0.0f, -kGroundSize), vec3(kGroundSize, -0.0f, kGroundSize)};
 
-  vec3 vertex_normals[] = {vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
-                           vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)};
+  vec3 vertex_normals[] = {vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+                           vec3(0.0f, 1.0f, 0.0f)};
 
-  vec2 tex_coords[] = {vec2(0.0f, 0.0f), vec2(0.0f, 20.0f), vec2(20.0f, 0.0f),
-                       vec2(20.0f, 20.0f)};
+  vec2 tex_coords[] = {vec2(0.0f, 0.0f), vec2(0.0f, 20.0f), vec2(20.0f, 0.0f), vec2(20.0f, 20.0f)};
   GLuint indices[] = {0, 1, 2, 1, 3, 2};
   vec3 colors[] = {(100.f, 0.f, 0.f)};
   int numVert = 4, numInd = 6;
-  Model *model = LoadDataToModel(vertices, vertex_normals, tex_coords, colors,
-                                 indices, numVert, numInd);
+  Model *model =
+      LoadDataToModel(vertices, vertex_normals, tex_coords, colors, indices, numVert, numInd);
   return model;
 }
 
@@ -87,7 +86,9 @@ void loadTextures() {
   glActiveTexture(GL_TEXTURE1);
   LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
   glActiveTexture(GL_TEXTURE2);
-  LoadTGATextureSimple("textures/skybox2.tga", &skyboxTex);
+  LoadTGATextureSimple("textures/skybox.tga", &skyboxTex);
+  glActiveTexture(GL_TEXTURE3);
+  LoadTGATextureSimple("textures/grass.tga", &grassTex);
 }
 
 /// @brief  Calculate the direction of the camera
@@ -107,11 +108,42 @@ void initShaders() {
 /// @brief Upload the projection matrix to the shader programs
 void uploadProjectionMatrix() {
   glUseProgram(terrainProgram);
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1,
-                     GL_TRUE, projectionMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1, GL_TRUE,
+                     projectionMatrix.m);
   glUseProgram(noShadeProgram);
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1,
-                     GL_TRUE, projectionMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE,
+                     projectionMatrix.m);
+}
+
+struct LightManager {
+  std::vector<vec3> lightSourcesColors;
+  std::vector<GLint> isDirectional;
+  std::vector<vec3> lightSourcesDirectionsPositions;
+  int getCount() { return lightSourcesColors.size(); }
+};
+int getLightCount(const LightManager &lightManager) {
+  return lightManager.lightSourcesColors.size();
+}
+
+LightManager lightManager;
+
+void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional = false) {
+  lightManager.lightSourcesColors.push_back(lightColor);
+  lightManager.lightSourcesDirectionsPositions.push_back(lightPos);
+  GLint isDir = isDirectional ? 1 : 0;
+  lightManager.isDirectional.push_back(isDir);
+}
+
+void uploadLights() {
+  glUseProgram(terrainProgram);
+  int lightCount = getLightCount(lightManager);
+  glUniform1i(glGetUniformLocation(terrainProgram, "lightCount"), lightCount);
+  glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesColors"), lightCount,
+               &lightManager.lightSourcesColors[0].x);
+  glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesDirPos"), lightCount,
+               &lightManager.lightSourcesDirectionsPositions[0].x);
+  glUniform1iv(glGetUniformLocation(terrainProgram, "isDirectional"), lightCount,
+               &lightManager.isDirectional[0]);
 }
 
 void init(void) {
@@ -127,6 +159,13 @@ void init(void) {
 
   initShaders();
   uploadProjectionMatrix();
+
+  placeLight(vec3(50, 0, 0), vec3(1, 0, 0));
+  placeLight(vec3(25, 0, 0), vec3(0, 1, 0));
+  placeLight(vec3(10, 0, 0), vec3(0, 0, 1));
+  uploadLights();
+  printError("init light");
+
   loadTextures();
   loadModels();
   printError("init");
@@ -146,20 +185,19 @@ void drawSkybox() {
   skyBoxTransform.m[7] = 0;
   skyBoxTransform.m[11] = 0;
 
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "cameraMatrix"), 1,
-                     GL_TRUE, skyBoxTransform.m);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "cameraMatrix"), 1, GL_TRUE,
+                     skyBoxTransform.m);
 
   mat4 trans = T(0.0f, -0.3f, 0.0f);
   mat4 rot = Ry(0);
   mat4 total = rot * trans;
   mat4 scale = S(20.0f, 20.0f, 20.0f);
   total = total * scale;
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1,
-                     GL_TRUE, total.m);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
   // set texture as skybox texture (texUnit = 2)
   glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), 2);
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1,
-                     GL_TRUE, projectionMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE,
+                     projectionMatrix.m);
   DrawModel(skyboxModel, noShadeProgram, "inPosition", NULL, "inTexCoord");
 
   // enable depth test and culling
@@ -169,21 +207,20 @@ void drawSkybox() {
 
 void drawGround() {
   glUseProgram(terrainProgram);
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
-                     GL_TRUE, cameraMatrix.m);
+  mat4 trans = T(0.f, 0.f, 0.f);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, cameraMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, trans.m);
   // set texture as floor texture (texUnit = 0)
   glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 0);
-  DrawModel(groundModel, terrainProgram, "inPosition", "inNormal",
-            "inTexCoord");
+  DrawModel(groundModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
 void drawBox(Model *model, mat4 trans, mat4 rot) {
   glUseProgram(terrainProgram);
   mat4 total = cameraMatrix * trans * rot;
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
-                     GL_TRUE, total.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
   // set texture as wall texture (texUnit = 1)
-  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 1);
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 3);
   DrawModel(model, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
@@ -195,12 +232,12 @@ void drawGroundSphere() {
   groundBallPos.y = 0;
   mat4 trans = T(groundBallPos.x, groundBallPos.y, groundBallPos.z);
   mat4 total = cameraMatrix * trans;
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
-                     GL_TRUE, total.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, trans.m);
+
   // set texture as wall texture
-  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 1);
-  DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal",
-            "inTexCoord");
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 3);
+  DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
 void drawBoxes() {
@@ -219,6 +256,7 @@ void display(void) {
   drawGround();
   drawBoxes();
 
+
   printError("display");
 
   glutSwapBuffers();
@@ -236,12 +274,11 @@ void checkInput() {
   bool piThetaUpdated = false;
 
   // Update camera position based on WASD keys
-  vec3 forward =
-      normalize(cameraLookAt - cameraPos);  // Direction camera is facing
-  forward.y = 0;                            // Remove y-component
-  forward = normalize(forward);  // Normalize since we altered the length
-  vec3 rightDir = normalize(cross(
-      forward, cameraUp));  // Right direction relative to camera's forward
+  vec3 forward = normalize(cameraLookAt - cameraPos);  // Direction camera is facing
+  forward.y = 0;                                       // Remove y-component
+  forward = normalize(forward);                        // Normalize since we altered the length
+  vec3 rightDir =
+      normalize(cross(forward, cameraUp));  // Right direction relative to camera's forward
 
   // Forward and backward
   if (glutKeyIsDown('w')) cameraPos += forward * cameraSpeed;
@@ -259,8 +296,10 @@ void checkInput() {
   if (glutKeyIsDown('i')) phi += rotationSpeed;
   if (glutKeyIsDown('k')) phi -= rotationSpeed;
 
-  if (glutKeyIsDown(GLUT_KEY_SPACE)) {
-    isSlow = !isSlow;
+  if (glutKeyIsDown(GLUT_KEY_UP)) {
+    cameraPos.y += cameraSpeed;
+  } else if (glutKeyIsDown(GLUT_KEY_DOWN)) {
+    cameraPos.y -= cameraSpeed;
   }
 
   // Clamp the rotation angle to be within reasonable values
