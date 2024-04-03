@@ -11,6 +11,7 @@
 #include "MicroGlut.h"
 #include "VectorUtils4.h"
 #include "boxes.h"
+#include "ground.h"
 #include "vector"
 
 // time
@@ -34,7 +35,7 @@ float theta = -2 * M_PI_2;
 float phi = 0;
 bool isSlow = false;
 
-#define kGroundSize 100.0f
+#define kGroundSize 50.0f
 
 struct BoxManager {
   std::vector<Model *> boxes;
@@ -42,40 +43,40 @@ struct BoxManager {
   std::vector<mat4> rotations;
 };
 
+struct LightManager {
+  std::vector<vec3> lightSourcesColors;
+  std::vector<GLint> isDirectional;
+  std::vector<vec3> lightSourcesDirectionsPositions;
+  int getCount() { return lightSourcesColors.size(); }
+};
+
 BoxManager boxManager;
-
-Model *getGroundModel() {
-  vec3 vertices[] = {vec3(-kGroundSize, 0.0f, -kGroundSize), vec3(-kGroundSize, 0.0f, kGroundSize),
-                     vec3(kGroundSize, -0.0f, -kGroundSize), vec3(kGroundSize, -0.0f, kGroundSize)};
-
-  vec3 vertex_normals[] = {vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
-                           vec3(0.0f, 1.0f, 0.0f)};
-
-  vec2 tex_coords[] = {vec2(0.0f, 0.0f), vec2(0.0f, 20.0f), vec2(20.0f, 0.0f), vec2(20.0f, 20.0f)};
-  GLuint indices[] = {0, 1, 2, 1, 3, 2};
-  vec3 colors[] = {(100.f, 0.f, 0.f)};
-  int numVert = 4, numInd = 6;
-  Model *model =
-      LoadDataToModel(vertices, vertex_normals, tex_coords, colors, indices, numVert, numInd);
-  return model;
-}
+LightManager lightManager;
 
 void generateBoxes() {
   // wall 1
-  boxManager.boxes.push_back(getBoxModel(30, 30, 2));
-  boxManager.translations.push_back(T(0, 0, 15));
+  boxManager.boxes.push_back(getBoxModel(100, 50, 2));
+  boxManager.translations.push_back(T(-50, 0, -50));
   boxManager.rotations.push_back(Ry(0));
   // wall 2
-  boxManager.boxes.push_back(getBoxModel(30, 30, 2));
-  boxManager.translations.push_back(T(0, 0, 15));
+  boxManager.boxes.push_back(getBoxModel(100, 50, 2));
+  boxManager.translations.push_back(T(-50, 0, 50));
   boxManager.rotations.push_back(Ry(M_PI / 2));
+  // wall 3
+  boxManager.boxes.push_back(getBoxModel(100, 50, 2));
+  boxManager.translations.push_back(T(-50, 0, -50));
+  boxManager.rotations.push_back(Ry(M_PI / 2));
+  // ceiling
+  boxManager.boxes.push_back(getBoxModel(100, 2, 100));
+  boxManager.translations.push_back(T(-50, 50, -50));
+  boxManager.rotations.push_back(Ry(0));
 }
 
 /// @brief Load models from files: ground sphere and ground plane
 void loadModels() {
   groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
   skyboxModel = LoadModelPlus("objects/skybox.obj");
-  groundModel = getGroundModel();
+  groundModel = getGroundModel(50.0);
   generateBoxes();
 }
 
@@ -95,9 +96,7 @@ void loadTextures() {
 /// @param theta
 /// @param phi
 /// @return
-vec3 cameraDirection(float theta, float phi) {
-  return (cos(theta) * cos(phi), sin(phi), sin(theta) * cos(phi));
-}
+vec3 cameraDirection(float theta, float phi) { return (cos(theta) * cos(phi), sin(phi), sin(theta) * cos(phi)); }
 
 void initShaders() {
   terrainProgram = loadShaders("terrain.vert", "terrain.frag");
@@ -108,24 +107,12 @@ void initShaders() {
 /// @brief Upload the projection matrix to the shader programs
 void uploadProjectionMatrix() {
   glUseProgram(terrainProgram);
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1, GL_TRUE,
-                     projectionMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
   glUseProgram(noShadeProgram);
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE,
-                     projectionMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 }
 
-struct LightManager {
-  std::vector<vec3> lightSourcesColors;
-  std::vector<GLint> isDirectional;
-  std::vector<vec3> lightSourcesDirectionsPositions;
-  int getCount() { return lightSourcesColors.size(); }
-};
-int getLightCount(const LightManager &lightManager) {
-  return lightManager.lightSourcesColors.size();
-}
-
-LightManager lightManager;
+int getLightCount(const LightManager &lightManager) { return lightManager.lightSourcesColors.size(); }
 
 void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional = false) {
   lightManager.lightSourcesColors.push_back(lightColor);
@@ -142,8 +129,7 @@ void uploadLights() {
                &lightManager.lightSourcesColors[0].x);
   glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesDirPos"), lightCount,
                &lightManager.lightSourcesDirectionsPositions[0].x);
-  glUniform1iv(glGetUniformLocation(terrainProgram, "isDirectional"), lightCount,
-               &lightManager.isDirectional[0]);
+  glUniform1iv(glGetUniformLocation(terrainProgram, "isDirectional"), lightCount, &lightManager.isDirectional[0]);
 }
 
 void init(void) {
@@ -160,9 +146,7 @@ void init(void) {
   initShaders();
   uploadProjectionMatrix();
 
-  placeLight(vec3(50, 0, 0), vec3(1, 0, 0));
-  placeLight(vec3(25, 0, 0), vec3(0, 1, 0));
-  placeLight(vec3(10, 0, 0), vec3(0, 0, 1));
+  placeLight(vec3(0, 40, 25), vec3(1, 1, 1));
   uploadLights();
   printError("init light");
 
@@ -170,7 +154,6 @@ void init(void) {
   loadModels();
   printError("init");
 }
-
 void drawSkybox() {
   glUseProgram(noShadeProgram);
   // disable depth test and culling
@@ -185,8 +168,7 @@ void drawSkybox() {
   skyBoxTransform.m[7] = 0;
   skyBoxTransform.m[11] = 0;
 
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "cameraMatrix"), 1, GL_TRUE,
-                     skyBoxTransform.m);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "cameraMatrix"), 1, GL_TRUE, skyBoxTransform.m);
 
   mat4 trans = T(0.0f, -0.3f, 0.0f);
   mat4 rot = Ry(0);
@@ -196,8 +178,7 @@ void drawSkybox() {
   glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
   // set texture as skybox texture (texUnit = 2)
   glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), 2);
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE,
-                     projectionMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
   DrawModel(skyboxModel, noShadeProgram, "inPosition", NULL, "inTexCoord");
 
   // enable depth test and culling
@@ -217,10 +198,12 @@ void drawGround() {
 
 void drawBox(Model *model, mat4 trans, mat4 rot) {
   glUseProgram(terrainProgram);
-  mat4 total = cameraMatrix * trans * rot;
+  mat4 m2w = trans * rot;
+  mat4 total = cameraMatrix * m2w;
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, m2w.m);
   // set texture as wall texture (texUnit = 1)
-  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 3);
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 1);
   DrawModel(model, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
@@ -242,8 +225,7 @@ void drawGroundSphere() {
 
 void drawBoxes() {
   for (int i = 0; i < boxManager.boxes.size(); i++) {
-    drawBox(boxManager.boxes[i], boxManager.translations[i],
-            boxManager.rotations[i]);
+    drawBox(boxManager.boxes[i], boxManager.translations[i], boxManager.rotations[i]);
   }
 }
 
@@ -255,7 +237,6 @@ void display(void) {
   drawGroundSphere();
   drawGround();
   drawBoxes();
-
 
   printError("display");
 
@@ -274,11 +255,10 @@ void checkInput() {
   bool piThetaUpdated = false;
 
   // Update camera position based on WASD keys
-  vec3 forward = normalize(cameraLookAt - cameraPos);  // Direction camera is facing
-  forward.y = 0;                                       // Remove y-component
-  forward = normalize(forward);                        // Normalize since we altered the length
-  vec3 rightDir =
-      normalize(cross(forward, cameraUp));  // Right direction relative to camera's forward
+  vec3 forward = normalize(cameraLookAt - cameraPos);   // Direction camera is facing
+  forward.y = 0;                                        // Remove y-component
+  forward = normalize(forward);                         // Normalize since we altered the length
+  vec3 rightDir = normalize(cross(forward, cameraUp));  // Right direction relative to camera's forward
 
   // Forward and backward
   if (glutKeyIsDown('w')) cameraPos += forward * cameraSpeed;
