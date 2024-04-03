@@ -8,13 +8,14 @@
 #include "LoadTGA.h"
 #include "MicroGlut.h"
 #include "VectorUtils4.h"
+#include "vector"
 
 // time
 GLfloat t;
 // matrices
 mat4 cameraMatrix, projectionMatrix;
 // vertex array object
-Model *groundModel, *groundSphereModel, *skyboxModel;
+Model *groundSphereModel, *skyboxModel, *groundModel, *boxModel;
 // Reference to shader program
 GLuint terrainProgram, noShadeProgram;
 // Textures
@@ -32,10 +33,78 @@ bool isSlow = false;
 
 #define kGroundSize 100.0f
 
-/// @brief Load models from files: ground sphere and ground plane
-void loadModels() {
-  groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
-  skyboxModel = LoadModelPlus("objects/skybox.obj");
+struct BoxManager {
+  std::vector<Model *> boxes;
+  std::vector<mat4> translations;
+  std::vector<mat4> rotations;
+};
+
+BoxManager boxManager;
+
+/// @brief Create a box model
+Model *getBoxModel(float width = 10.0f, float height = 10.0f,
+                   float depth = 10.0f) {
+  vec3 vertices[] = {// front
+                     vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, width),
+                     vec3(0.0f, height, 0.0f), vec3(0.0f, height, width),
+                     // back
+                     vec3(depth, 0.0f, 0.0f), vec3(depth, 0.0f, width),
+                     vec3(depth, height, 0.0f), vec3(depth, height, width),
+                     // right
+                     vec3(0.0f, 0.0f, width), vec3(depth, 0.0f, width),
+                     vec3(0.0f, height, width), vec3(depth, height, width),
+                     // left
+                     vec3(0.0f, 0.0f, 0.0f), vec3(depth, 0.0f, 0.0f),
+                     vec3(0.0f, height, 0.0f), vec3(depth, height, 0.0f),
+                     // top
+                     vec3(0.0f, height, 0.0f), vec3(0.0f, height, width),
+                     vec3(depth, height, 0.0f), vec3(depth, height, width),
+                     // bottom
+                     vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, width),
+                     vec3(depth, 0.0f, 0.0f), vec3(depth, 0.0f, width)};
+
+  vec3 vertex_normals[] = {// front
+                           vec3(-1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
+                           vec3(-1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
+                           // back
+                           vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f),
+                           vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f),
+                           // right
+                           vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
+                           vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
+                           // left
+                           vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+                           vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+                           // top
+                           vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+                           vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+                           // bottom
+                           vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f),
+                           vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)};
+
+  vec2 tex_coords[] = {vec2(0.0f, 0.0f), vec2(0.0f, 20.0f), vec2(20.0f, 0.0f),
+                       vec2(20.0f, 20.0f)};
+  GLuint indices[] = {// front
+                      0, 1, 2, 1, 3, 2,
+                      // back
+                      4, 6, 5, 6, 7, 5,
+                      // right
+                      8, 9, 11, 8, 11, 10,
+                      // left
+                      15, 13, 12, 12, 14, 15,
+                      // top
+                      16, 17, 18, 17, 19, 18,
+                      // bottom
+                      20, 22, 21, 21, 22, 23};
+
+  vec3 colors[] = {(100.f, 0.f, 0.f)};
+  int numVert = 24, numInd = 36;
+  Model *model = LoadDataToModel(vertices, vertex_normals, tex_coords, colors,
+                                 indices, numVert, numInd);
+  return model;
+}
+
+Model *getGroundModel() {
   vec3 vertices[] = {vec3(-kGroundSize, 0.0f, -kGroundSize),
                      vec3(-kGroundSize, 0.0f, kGroundSize),
                      vec3(kGroundSize, -0.0f, -kGroundSize),
@@ -49,8 +118,22 @@ void loadModels() {
   GLuint indices[] = {0, 1, 2, 1, 3, 2};
   vec3 colors[] = {(100.f, 0.f, 0.f)};
   int numVert = 4, numInd = 6;
-  groundModel = LoadDataToModel(vertices, vertex_normals, tex_coords, colors,
-                                indices, numVert, numInd);
+  Model *model = LoadDataToModel(vertices, vertex_normals, tex_coords, colors,
+                                 indices, numVert, numInd);
+  return model;
+}
+
+/// @brief Load models from files: ground sphere and ground plane
+void loadModels() {
+  groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
+  skyboxModel = LoadModelPlus("objects/skybox.obj");
+  groundModel = getGroundModel();
+  // Get 2 box models and put them in the boxManager
+  for (int i = 0; i < 3; i++) {
+    boxManager.boxes.push_back(getBoxModel());
+    boxManager.translations.push_back(T(0, i * 15.f, 0));
+    boxManager.rotations.push_back(Ry(0));
+  }
 }
 
 /// @brief Load textures from file
@@ -58,7 +141,7 @@ void loadTextures() {
   glActiveTexture(GL_TEXTURE0);
   LoadTGATextureSimple("textures/floor.tga", &backroomsFloorTex);
   glActiveTexture(GL_TEXTURE1);
-  LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
+  LoadTGATextureSimple("textures/grass.tga", &backroomsWallTex);
   glActiveTexture(GL_TEXTURE2);
   LoadTGATextureSimple("textures/skybox2.tga", &skyboxTex);
 }
@@ -90,7 +173,7 @@ void uploadProjectionMatrix() {
 void init(void) {
   glClearColor(0.2, 0.2, 0.5, 0);
   glEnable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   printError("GL inits");
 
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
@@ -142,13 +225,22 @@ void drawSkybox() {
 
 void drawGround() {
   glUseProgram(terrainProgram);
-  mat4 trans = T(0.f, 0.f, 0.f);
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
                      GL_TRUE, cameraMatrix.m);
   // set texture as floor texture (texUnit = 0)
   glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 0);
   DrawModel(groundModel, terrainProgram, "inPosition", "inNormal",
             "inTexCoord");
+}
+
+void drawWall(Model *model, mat4 trans, mat4 rot) {
+  glUseProgram(terrainProgram);
+  mat4 total = cameraMatrix * trans * rot;
+  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
+                     GL_TRUE, total.m);
+  // set texture as wall texture (texUnit = 1)
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 1);
+  DrawModel(model, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
 void drawGroundSphere() {
@@ -162,7 +254,7 @@ void drawGroundSphere() {
   glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1,
                      GL_TRUE, total.m);
   // set texture as wall texture
-  glUniform1i(glGetUniformLocation(terrainProgram, "tex"), 1);
+  glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), 1);
   DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal",
             "inTexCoord");
 }
@@ -171,9 +263,14 @@ void display(void) {
   // clear the screen
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  drawSkybox();
+  // drawSkybox();
   drawGroundSphere();
   drawGround();
+  // drawWall();
+  for (int i = 0; i < boxManager.boxes.size(); i++) {
+    drawWall(boxManager.boxes[i], boxManager.translations[i],
+             boxManager.rotations[i]);
+  }
 
   printError("display");
 
