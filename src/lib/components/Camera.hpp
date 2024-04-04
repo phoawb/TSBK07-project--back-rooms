@@ -7,7 +7,7 @@ struct Camera {
   mat4 cameraMatrix;
   float theta;
   float phi;
-  vec3 cameraLookAt;
+  vec3 lookAt;
   vec3 cameraUp;
 
   /*

@@ -11,8 +11,5 @@ class CameraControlSystem : public System {
   void Update(float dt);
 
  private:
-  //mat4 cameraMatrix;
-  vec3 cameraPos = {60.f, 10.f, 0.f};
-
   void InputListener(Event& event);
 };
