@@ -100,7 +100,6 @@ void RenderSystem::Init() {
 
   // set up projection matrix and camera matrix
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
-  vec3 angles = cameraDirection(theta, phi);
 
   // init shaders
   terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");

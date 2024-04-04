@@ -27,8 +27,6 @@ class RenderSystem : public System {
  private:
   Entity mCamera;
   mat4 projectionMatrix;
-  float theta = 0;
-  float phi = 0;
   mat4 cameraMatrix;
   Model *groundSphereModel, *skyboxModel, *groundModel;
   // Reference to shader program
