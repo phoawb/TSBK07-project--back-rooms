@@ -79,7 +79,6 @@ int main(int argc, char **argv) {
 
   renderSystem->Init();
 
-  //  End ECS stuff
   glutTimerFunc(20, &onTimer, 0);
   glutPassiveMotionFunc(mouse);
   glutMainLoop();
