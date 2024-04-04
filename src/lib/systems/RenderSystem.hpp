@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ecs.hpp"
-#include "memory"
+#include "LightManager.hpp"
+#include "LittleOBJLoader.h"
+#include "core/System.hpp"
 
 class Event;
 

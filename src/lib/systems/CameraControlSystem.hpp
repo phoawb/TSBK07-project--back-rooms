@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ecs.hpp"
-
+#include "VectorUtils4.h"
+#include "core/System.hpp"
 class Event;
 
 class CameraControlSystem : public System {

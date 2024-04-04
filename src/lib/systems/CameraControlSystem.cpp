@@ -3,6 +3,7 @@
 #include "MicroGlut.h"
 #include "components/Camera.hpp"
 #include "components/Transform.hpp"
+#include "core/Coordinator.hpp"
 
 extern Coordinator gCoordinator;
 

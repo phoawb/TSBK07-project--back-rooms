@@ -6,7 +6,7 @@
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
-#include "ecs.hpp"
+#include "core/Coordinator.hpp"
 #include "systems/CameraControlSystem.hpp"
 #include "systems/RenderSystem.hpp"
 #include "vector"
