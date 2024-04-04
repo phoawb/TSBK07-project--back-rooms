@@ -11,8 +11,6 @@ class RenderSystem : public System {
  public:
   void drawSkybox();
 
-  void drawGroundSphere();
-
   void Init();
 
   void Update();
