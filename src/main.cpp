@@ -17,13 +17,9 @@
 
 vec2 GROUND_SIZE = vec2(50, 100);
 
-GLuint terrainProgram, noShadeProgram;
-
 GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
 std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
-
-LightManager lightManager;
 
 Coordinator gCoordinator;
 
@@ -82,16 +78,6 @@ int main(int argc, char **argv) {
   glutInitWindowSize(600, 600);
   glutCreateWindow("TSBK07 - Project");
   glutDisplayFunc(display);
-
-  terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
-
-  float far = 1000.0f;
-  float near = 0.2f;
-  mat4 projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, near, far);
-
-  // init shaders
-  terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
-  printError("init shader");
 
   // Start ECS stuff
   gCoordinator.Init();
