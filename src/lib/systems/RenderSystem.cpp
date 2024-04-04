@@ -13,6 +13,7 @@
 #include "ground.h"
 
 extern Coordinator gCoordinator;
+extern ShaderManager shaderManager;
 
 void RenderSystem::drawSkybox() {
   glUseProgram(noShadeProgram);
@@ -74,19 +75,6 @@ void RenderSystem::Init() {
   printError("init shader");
   glUseProgram(noShadeProgram);
   glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-
-  // Upload lights to terrain shader
-  auto terrainId = shaderManager.getShaderId(TERRAIN);
-  lightManager.placeLight(vec3(0, 40, 25), vec3(1, 1, 1));
-  int lightCount = lightManager.getCount();
-  glUseProgram(terrainId);
-  glUniform1i(glGetUniformLocation(terrainId, "lightCount"), lightCount);
-  glUniform3fv(glGetUniformLocation(terrainId, "lightSourcesColors"), lightCount,
-                &lightManager.lightSourcesColors[0].x);
-  glUniform3fv(glGetUniformLocation(terrainId, "lightSourcesDirPos"), lightCount,
-                &lightManager.lightSourcesDirectionsPositions[0].x);
-  glUniform1iv(glGetUniformLocation(terrainId, "isDirectional"), lightCount, &lightManager.isDirectional[0]);
-  // end upload lights
 
   skyboxModel = LoadModelPlus("objects/skybox.obj");
 

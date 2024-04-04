@@ -2,8 +2,10 @@
 
 #include "GL_utilities.h"
 #include "MicroGlut.h"
+#include "ShaderManager.hpp"
 #include "boxes.h"
 #include "components/Camera.hpp"
+#include "components/Light.hpp"
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
@@ -11,6 +13,7 @@
 #include "core/Enums.hpp"
 #include "ground.h"
 #include "systems/CameraControlSystem.hpp"
+#include "systems/LightingSystem.hpp"
 #include "systems/RenderSystem.hpp"
 #include "vector"
 
@@ -19,8 +22,10 @@ float GROUND_SIZE = 50;
 GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
 std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
+std::__1::shared_ptr<LightingSystem> lightingSystem;
 
 Coordinator gCoordinator;
+ShaderManager shaderManager;
 
 int deltaMouseX = 0;
 int deltaMouseY = 0;
@@ -79,7 +84,15 @@ void createWallEntities(WallProps wallProps) {
   }
 }
 
-int main(int argc, char **argv) {
+void createLightEntities() {
+  vec3 color = vec3(1, 1, 1);
+  vec3 pos = vec3(0, 40, 25);
+  auto lightEntity = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
+  gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN, .isDirectional = 0});
+}
+
+int main(int argc, char** argv) {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
   glutInitContextVersion(3, 2);
@@ -89,10 +102,12 @@ int main(int argc, char **argv) {
 
   // Start ECS stuff
   gCoordinator.Init();
+  shaderManager.Init();
 
   gCoordinator.RegisterComponent<Renderable>();
   gCoordinator.RegisterComponent<Transform>();
   gCoordinator.RegisterComponent<Camera>();
+  gCoordinator.RegisterComponent<Light>();
 
   cameraControlSystem = gCoordinator.RegisterSystem<CameraControlSystem>();
   {
@@ -113,6 +128,16 @@ int main(int argc, char **argv) {
   }
 
   renderSystem->Init();
+
+  lightingSystem = gCoordinator.RegisterSystem<LightingSystem>();
+  {
+    Signature signature;
+    signature.set(gCoordinator.GetComponentType<Light>());
+    signature.set(gCoordinator.GetComponentType<Transform>());
+    gCoordinator.SetSystemSignature<LightingSystem>(signature);
+  }
+  createLightEntities();
+  lightingSystem->Init();
 
   int numWalls = 4;
   std::vector<mat4> translations = {T(-50, 0.0, -50), T(-50, 0, 50), T(-50, 0, -50), T(-50, 50, -50)};

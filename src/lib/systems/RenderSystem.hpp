@@ -1,8 +1,7 @@
 #pragma once
 
-#include "LittleOBJLoader.h"
-#include "ShaderManager.hpp"
 #include "LightManager.hpp"
+#include "LittleOBJLoader.h"
 #include "core/System.hpp"
 
 class Event;
@@ -20,7 +19,6 @@ class RenderSystem : public System {
   mat4 cameraMatrix;
   mat4 projectionMatrix;
   LightManager lightManager;
-  ShaderManager shaderManager;
   Model *groundSphereModel, *skyboxModel, *groundModel;
   GLuint terrainProgram, noShadeProgram;
   GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
