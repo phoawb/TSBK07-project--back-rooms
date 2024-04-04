@@ -33,8 +33,6 @@ void CameraControlSystem::Update(float dt) {
     if (glutKeyIsDown('a')) cameraPos -= rightDir * cameraSpeed;
     if (glutKeyIsDown('d')) cameraPos += rightDir * cameraSpeed;
 
-    transform.position = cameraPos;
-
     // printf("Entity id: %d\n", entity);
     // printf("CCS::Camera position: %f %f %f\n", cameraPos.x, cameraPos.y, cameraPos.z);
 
@@ -52,6 +50,8 @@ void CameraControlSystem::Update(float dt) {
     } else if (glutKeyIsDown(GLUT_KEY_DOWN)) {
       cameraPos.y -= cameraSpeed;
     }
+
+    transform.position = cameraPos;
 
     // Clamp the rotation angle to be within reasonable values
     phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, phi));
