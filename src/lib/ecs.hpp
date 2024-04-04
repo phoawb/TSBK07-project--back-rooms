@@ -2,26 +2,12 @@
 #include "VectorUtils4.h"
 #include "bitset"
 #include "cassert"
-#include "components/Camera.hpp"
-#include "components/Renderable.hpp"
-#include "components/RigidBody.hpp"
-#include "components/Transform.hpp"
+#include "core/Types.hpp"
 #include "cstdint"
 #include "memory"
 #include "queue"
 #include "set"
 #include "vector"
-
-using Entity = std::uint32_t;
-const Entity MAX_ENTITIES = 5000;
-
-using ComponentType = std::uint8_t;
-const ComponentType MAX_COMPONENTS = 32;
-
-using Signature = std::bitset<MAX_COMPONENTS>;
-
-using EventId = std::uint32_t;
-using ParamId = std::uint32_t;
 
 // TODO: remove this
 struct LightManager {

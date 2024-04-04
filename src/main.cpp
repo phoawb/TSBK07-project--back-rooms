@@ -2,13 +2,13 @@
 
 #include "GL_utilities.h"
 #include "MicroGlut.h"
-#include "cameraControlSystem.hpp"
 #include "components/Camera.hpp"
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
 #include "ecs.hpp"
-#include "renderSystem.hpp"
+#include "systems/CameraControlSystem.hpp"
+#include "systems/RenderSystem.hpp"
 #include "vector"
 
 GLfloat t;

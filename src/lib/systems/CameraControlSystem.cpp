@@ -1,6 +1,8 @@
 #include "CameraControlSystem.hpp"
 
 #include "MicroGlut.h"
+#include "components/Camera.hpp"
+#include "components/Transform.hpp"
 
 extern Coordinator gCoordinator;
 
