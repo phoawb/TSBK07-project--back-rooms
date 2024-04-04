@@ -1,9 +1,10 @@
 #pragma once
 
 #include "LittleOBJLoader.h"
+#include "core/Enums.hpp"
 
 struct Renderable {
   Model* model;
-  GLuint program;
+  ShaderType shader;
   GLuint texUnit;
 };

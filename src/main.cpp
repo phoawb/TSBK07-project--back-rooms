@@ -9,6 +9,7 @@
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
+#include "core/Enums.hpp"
 #include "ground.h"
 #include "systems/CameraControlSystem.hpp"
 #include "systems/RenderSystem.hpp"
@@ -69,7 +70,7 @@ void createWallEntities(WallProps wallProps) {
     gCoordinator.AddComponent(entity,
                               Renderable{.model = getBoxModel(wallProps.dimensions[i].x, wallProps.dimensions[i].y,
                                                               wallProps.dimensions[i].z),
-                                         .program = terrainProgram,
+                                         .shader = TERRAIN,
                                          .texUnit = 1});
   }
 }
@@ -91,24 +92,6 @@ int main(int argc, char **argv) {
   // init shaders
   terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
   printError("init shader");
-
-  // Upload projection matrix to shader
-  glUseProgram(terrainProgram);
-  glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-  // end projection upload
-
-  lightManager.placeLight(vec3(0, 40, 25), vec3(1, 1, 1));
-
-  // Upload light data to shader
-  glUseProgram(terrainProgram);
-  int lightCount = lightManager.getCount();
-  glUniform1i(glGetUniformLocation(terrainProgram, "lightCount"), lightCount);
-  glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesColors"), lightCount,
-               &lightManager.lightSourcesColors[0].x);
-  glUniform3fv(glGetUniformLocation(terrainProgram, "lightSourcesDirPos"), lightCount,
-               &lightManager.lightSourcesDirectionsPositions[0].x);
-  glUniform1iv(glGetUniformLocation(terrainProgram, "isDirectional"), lightCount, &lightManager.isDirectional[0]);
-  // end light upload
 
   // Start ECS stuff
   gCoordinator.Init();
@@ -148,14 +131,13 @@ int main(int argc, char **argv) {
 
   auto ground = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(ground, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(
-      ground, Renderable{.model = getGroundModel(GROUND_SIZE.x), .program = terrainProgram, .texUnit = 0});
+  gCoordinator.AddComponent(ground,
+                            Renderable{.model = getGroundModel(GROUND_SIZE.x), .shader = TERRAIN, .texUnit = 0});
 
   auto groundSphere = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(groundSphere, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
   gCoordinator.AddComponent(
-      groundSphere,
-      Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .program = terrainProgram, .texUnit = 1});
+      groundSphere, Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = TERRAIN, .texUnit = 1});
 
   glutTimerFunc(20, &onTimer, 0);
   glutPassiveMotionFunc(mouse);

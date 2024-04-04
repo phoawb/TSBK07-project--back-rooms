@@ -3,12 +3,14 @@
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
 #include "LoadTGA.h"
+#include "ShaderManager.hpp"
 #include "boxes.h"
 #include "camera.hpp"
 #include "components/Camera.hpp"
 #include "components/Renderable.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
+#include "core/Enums.hpp"
 #include "ground.h"
 
 extern Coordinator gCoordinator;
@@ -52,9 +54,11 @@ void RenderSystem::Init() {
 
   printf("The entity id is %d\n", mCamera);
 
+  shaderManager.Init();
+
   float far = 1000.0f;
   float near = 0.2f;
-  mat4 projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, near, far);
+  projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, near, far);
 
   // Add camera and transform component to entity
   mCamera = gCoordinator.CreateEntity();
@@ -85,6 +89,19 @@ void RenderSystem::Init() {
   LoadTGATextureSimple("textures/grass.tga", &grassTex);
   // end load textures
 
+  // Upload lights to terrain shader
+  auto terrainId = shaderManager.getShaderId(TERRAIN);
+  lightManager.placeLight(vec3(0, 40, 25), vec3(1, 1, 1));
+  int lightCount = lightManager.getCount();
+  glUseProgram(terrainId);
+  glUniform1i(glGetUniformLocation(terrainId, "lightCount"), lightCount);
+  glUniform3fv(glGetUniformLocation(terrainId, "lightSourcesColors"), lightCount,
+                &lightManager.lightSourcesColors[0].x);
+  glUniform3fv(glGetUniformLocation(terrainId, "lightSourcesDirPos"), lightCount,
+                &lightManager.lightSourcesDirectionsPositions[0].x);
+  glUniform1iv(glGetUniformLocation(terrainId, "isDirectional"), lightCount, &lightManager.isDirectional[0]);
+  // end upload lights
+
   // load models
   skyboxModel = LoadModelPlus("objects/skybox.obj");
 
@@ -97,15 +114,17 @@ void RenderSystem::Update() {
     Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
     mat4 rot = gCoordinator.GetComponent<Transform>(entity).rotation;
-    GLuint program = gCoordinator.GetComponent<Renderable>(entity).program;
+    ShaderType shader = gCoordinator.GetComponent<Renderable>(entity).shader;
     GLuint texUnit = gCoordinator.GetComponent<Renderable>(entity).texUnit;
-    glUseProgram(program);
     mat4 m2w = trans * rot;
     mat4 total = cameraMatrix * m2w;
-    glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
-    glUniformMatrix4fv(glGetUniformLocation(program, "model2World"), 1, GL_TRUE, m2w.m);
-    glUniform1i(glGetUniformLocation(program, "texUnit"), texUnit);
-    DrawModel(model, program, "inPosition", "inNormal", "inTexCoord");
+    auto shaderId = shaderManager.getShaderId(shader);
+    glUseProgram(shaderId);
+    glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+    glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
+    glUniformMatrix4fv(glGetUniformLocation(shaderId, "model2World"), 1, GL_TRUE, m2w.m);
+    glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
+    DrawModel(model, shaderId, "inPosition", "inNormal", "inTexCoord");
   }
 
   // Update camera matrix
