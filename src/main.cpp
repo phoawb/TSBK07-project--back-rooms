@@ -74,13 +74,15 @@ void onTimer(int value) {
 void createWallEntities(WallProps wallProps) {
   for (int i = 0; i < wallProps.numWalls; i++) {
     auto entity = gCoordinator.CreateEntity();
+    TextureType texture = i < wallProps.numWalls - 1 ? OFFICE_WALL : OFFICE_CEILING;
+    float textureScale = i < wallProps.numWalls - 1 ? 1.0f : 4.0f;
     gCoordinator.AddComponent(entity,
                               Transform{.translation = wallProps.translations[i], .rotation = wallProps.rotations[i]});
     gCoordinator.AddComponent(entity,
                               Renderable{.model = getBoxModel(wallProps.dimensions[i].x, wallProps.dimensions[i].y,
-                                                              wallProps.dimensions[i].z),
+                                                              wallProps.dimensions[i].z, textureScale),
                                          .shader = TERRAIN,
-                                         .texture = OFFICE_WALL});
+                                         .texture = texture});
   }
 }
 
