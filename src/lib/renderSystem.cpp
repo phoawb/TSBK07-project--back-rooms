@@ -9,33 +9,6 @@
 
 extern Coordinator gCoordinator;
 
-void RenderSystem::generateBoxes() {
-  // wall 1
-  objectManager.objects.push_back(getBoxModel(100, 50, 2));
-  objectManager.translations.push_back(T(-50, 0, -50));
-  objectManager.rotations.push_back(Ry(0));
-  objectManager.programs.push_back(&terrainProgram);
-  objectManager.texUnits.push_back(1);
-  // wall 2
-  objectManager.objects.push_back(getBoxModel(100, 50, 2));
-  objectManager.translations.push_back(T(-50, 0, 50));
-  objectManager.rotations.push_back(Ry(M_PI / 2));
-  objectManager.programs.push_back(&terrainProgram);
-  objectManager.texUnits.push_back(1);
-  // wall 3
-  objectManager.objects.push_back(getBoxModel(100, 50, 2));
-  objectManager.translations.push_back(T(-50, 0, -50));
-  objectManager.rotations.push_back(Ry(M_PI / 2));
-  objectManager.programs.push_back(&terrainProgram);
-  objectManager.texUnits.push_back(1);
-  // ceiling
-  objectManager.objects.push_back(getBoxModel(100, 2, 100));
-  objectManager.translations.push_back(T(-50, 50, -50));
-  objectManager.rotations.push_back(Ry(0));
-  objectManager.programs.push_back(&terrainProgram);
-  objectManager.texUnits.push_back(1);
-}
-
 int RenderSystem::getLightCount(const LightManager &lightManager) { return lightManager.lightSourcesColors.size(); }
 
 void RenderSystem::placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional = false) {
@@ -103,23 +76,7 @@ void RenderSystem::drawGroundSphere() {
   DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
-void RenderSystem::drawObjects() {
-  for (int i = 0; i < objectManager.objects.size(); i++) {
-    Model *model = objectManager.objects[i];
-    mat4 trans = objectManager.translations[i];
-    mat4 rot = objectManager.rotations[i];
-    GLuint program = *objectManager.programs[i];
-    GLuint texUnit = objectManager.texUnits[i];
-    glUseProgram(program);
-    mat4 m2w = trans * rot;
-    mat4 total = cameraMatrix * m2w;
-    glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
-    glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, m2w.m);
-    // set texture as wall texture (texUnit = 1)
-    glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), texUnit);
-    DrawModel(model, terrainProgram, "inPosition", "inNormal", "inTexCoord");
-  }
-}
+void RenderSystem::drawObjects() {}
 
 void RenderSystem::Init() {
   glClearColor(0.2, 0.2, 0.5, 0);
@@ -184,20 +141,52 @@ void RenderSystem::Init() {
   groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
   skyboxModel = LoadModelPlus("objects/skybox.obj");
   groundModel = getGroundModel(50.0);
-  generateBoxes();
+  // begin generate boxes
+  // wall 1
+  auto wall1 = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(wall1, Transform{.translation = T(-50, 0.0, -50), .rotation = Ry(0)});
+  gCoordinator.AddComponent(wall1,
+                            Renderable{.model = getBoxModel(100, 50, 2), .program = terrainProgram, .texUnit = 1});
+  // wall 2
+  auto wall2 = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(wall2, Transform{.translation = T(-50, 0, 50), .rotation = Ry(M_PI / 2)});
+  gCoordinator.AddComponent(wall2,
+                            Renderable{.model = getBoxModel(100, 50, 2), .program = terrainProgram, .texUnit = 1});
+  // wall 3
+  auto wall3 = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(wall3, Transform{.translation = T(-50, 0, -50), .rotation = Ry(M_PI / 2)});
+  gCoordinator.AddComponent(wall3,
+                            Renderable{.model = getBoxModel(100, 50, 2), .program = terrainProgram, .texUnit = 1});
+  // ceiling
+  auto ceiling = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(ceiling, Transform{.translation = T(-50, 50, -50), .rotation = Ry(0)});
+  gCoordinator.AddComponent(ceiling,
+                            Renderable{.model = getBoxModel(100, 2, 100), .program = terrainProgram, .texUnit = 1});
   // end load models
 
   printError("init");
 }
 
 void RenderSystem::Update() {
-  // for (auto &entity : mEntities) {
   drawSkybox();
+  for (auto &entity : mEntities) {
+    // printf("Entity id: %d\n", entity);
+    Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
+    mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
+    mat4 rot = gCoordinator.GetComponent<Transform>(entity).rotation;
+    GLuint program = gCoordinator.GetComponent<Renderable>(entity).program;
+    GLuint texUnit = gCoordinator.GetComponent<Renderable>(entity).texUnit;
+    glUseProgram(program);
+    mat4 m2w = trans * rot;
+    mat4 total = cameraMatrix * m2w;
+    glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
+    glUniformMatrix4fv(glGetUniformLocation(terrainProgram, "model2World"), 1, GL_TRUE, m2w.m);
+    glUniform1i(glGetUniformLocation(terrainProgram, "texUnit"), texUnit);
+    DrawModel(model, terrainProgram, "inPosition", "inNormal", "inTexCoord");
+  }
   drawGroundSphere();
   drawGround();
-  drawObjects();
   auto &cameraTransform = gCoordinator.GetComponent<Transform>(0);
   auto &camera = gCoordinator.GetComponent<Camera>(0);
   cameraMatrix = lookAtv(cameraTransform.position, camera.cameraLookAt, camera.cameraUp);
-  //}
 }

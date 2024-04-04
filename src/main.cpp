@@ -3,6 +3,10 @@
 #include "GL_utilities.h"
 #include "MicroGlut.h"
 #include "cameraControlSystem.hpp"
+#include "components/Camera.hpp"
+#include "components/Renderable.hpp"
+#include "components/RigidBody.hpp"
+#include "components/Transform.hpp"
 #include "ecs.hpp"
 #include "renderSystem.hpp"
 #include "vector"
@@ -74,14 +78,6 @@ int main(int argc, char **argv) {
   }
 
   renderSystem->Init();
-
-  std::vector<Entity> entities(10);
-
-  for (auto &entity : entities) {
-    entity = gCoordinator.CreateEntity();
-    gCoordinator.AddComponent(entity, Transform{.position = vec3(0.0f, 0.0f, 500.0f)});
-    // gCoordinator.AddComponent(entity, Renderable{.model = groundModel, .program = terrainProgram, .texUnit = 0});
-  }
 
   //  End ECS stuff
   glutTimerFunc(20, &onTimer, 0);

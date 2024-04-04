@@ -7,8 +7,6 @@ class Event;
 
 class RenderSystem : public System {
  public:
-  void generateBoxes();
-
   int getLightCount(const LightManager &lightManager);
 
   void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional);
@@ -38,7 +36,6 @@ class RenderSystem : public System {
   GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
   vec3 groundBallPos = vec3(0, 0, 0);
 
-  ObjectManager objectManager;
   LightManager lightManager;
 
   // GLuint mVao{};
