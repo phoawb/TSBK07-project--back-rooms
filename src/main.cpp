@@ -14,7 +14,7 @@
 #include "systems/RenderSystem.hpp"
 #include "vector"
 
-vec2 GROUND_SIZE = vec2(50, 100);
+float GROUND_SIZE = 50;
 
 GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
@@ -66,7 +66,7 @@ void createWallEntities(WallProps wallProps) {
                               Renderable{.model = getBoxModel(wallProps.dimensions[i].x, wallProps.dimensions[i].y,
                                                               wallProps.dimensions[i].z),
                                          .shader = TERRAIN,
-                                         .texUnit = 1});
+                                         .texture = OFFICE_WALL});
   }
 }
 
@@ -116,13 +116,14 @@ int main(int argc, char **argv) {
 
   auto ground = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(ground, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(ground,
-                            Renderable{.model = getGroundModel(GROUND_SIZE.x), .shader = TERRAIN, .texUnit = 0});
+  gCoordinator.AddComponent(
+      ground, Renderable{.model = getGroundModel(GROUND_SIZE), .shader = TERRAIN, .texture = OFFICE_FLOOR});
 
   auto groundSphere = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(groundSphere, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
   gCoordinator.AddComponent(
-      groundSphere, Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = TERRAIN, .texUnit = 1});
+      groundSphere,
+      Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = TERRAIN, .texture = GRASS});
 
   glutTimerFunc(20, &onTimer, 0);
   glutPassiveMotionFunc(mouse);

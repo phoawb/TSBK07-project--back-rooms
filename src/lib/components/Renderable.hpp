@@ -6,5 +6,5 @@
 struct Renderable {
   Model* model;
   ShaderType shader;
-  GLuint texUnit;
+  TextureType texture;
 };

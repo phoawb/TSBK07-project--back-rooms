@@ -22,9 +22,9 @@ void CameraControlSystem::Update(float dt) {
 
     // Update camera position based on WASD keys
     vec3 forward = normalize(camera.lookAt - transform.position);  // Direction camera is facing
-    forward.y = 0;                                                       // Remove y-component
-    forward = normalize(forward);                                        // Normalize since we altered the length
-    vec3 rightDir = normalize(cross(forward, camera.cameraUp));          // Right direction relative to camera's forward
+    forward.y = 0;                                                 // Remove y-component
+    forward = normalize(forward);                                  // Normalize since we altered the length
+    vec3 rightDir = normalize(cross(forward, camera.cameraUp));    // Right direction relative to camera's forward
 
     // Forward and backward
     if (glutKeyIsDown('w')) transform.position += forward * moveSpeed;

@@ -2,7 +2,6 @@
 
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
-#include "LoadTGA.h"
 #include "ShaderManager.hpp"
 #include "boxes.h"
 #include "camera.hpp"
@@ -38,7 +37,8 @@ void RenderSystem::drawSkybox() {
   total = total * scale;
   glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
   // set texture as skybox texture (texUnit = 2)
-  glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), 2);
+  int texUnit = shaderManager.getTexId(SKYBOX_SKY);
+  glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), texUnit);
   DrawModel(skyboxModel, noShadeProgram, "inPosition", NULL, "inTexCoord");
 
   // enable depth test and culling
@@ -72,22 +72,8 @@ void RenderSystem::Init() {
   // init shaders
   noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
   printError("init shader");
-
-  // Upload projection matrix to shader
   glUseProgram(noShadeProgram);
   glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-  // end projection upload
-
-  // Load textures from file
-  glActiveTexture(GL_TEXTURE0);
-  LoadTGATextureSimple("textures/floor.tga", &backroomsFloorTex);
-  glActiveTexture(GL_TEXTURE1);
-  LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
-  glActiveTexture(GL_TEXTURE2);
-  LoadTGATextureSimple("textures/skybox.tga", &skyboxTex);
-  glActiveTexture(GL_TEXTURE3);
-  LoadTGATextureSimple("textures/grass.tga", &grassTex);
-  // end load textures
 
   // Upload lights to terrain shader
   auto terrainId = shaderManager.getShaderId(TERRAIN);
@@ -102,7 +88,6 @@ void RenderSystem::Init() {
   glUniform1iv(glGetUniformLocation(terrainId, "isDirectional"), lightCount, &lightManager.isDirectional[0]);
   // end upload lights
 
-  // load models
   skyboxModel = LoadModelPlus("objects/skybox.obj");
 
   printError("init");
@@ -115,10 +100,11 @@ void RenderSystem::Update() {
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
     mat4 rot = gCoordinator.GetComponent<Transform>(entity).rotation;
     ShaderType shader = gCoordinator.GetComponent<Renderable>(entity).shader;
-    GLuint texUnit = gCoordinator.GetComponent<Renderable>(entity).texUnit;
+    TextureType texture = gCoordinator.GetComponent<Renderable>(entity).texture;
     mat4 m2w = trans * rot;
     mat4 total = cameraMatrix * m2w;
     auto shaderId = shaderManager.getShaderId(shader);
+    int texUnit = shaderManager.getTexId(texture);
     glUseProgram(shaderId);
     glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
     glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
