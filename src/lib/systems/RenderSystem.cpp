@@ -93,9 +93,11 @@ void RenderSystem::Init() {
 
   // Add camera and transform component to entity
   mCamera = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(10.0f, 0.0f, 100.0f)});
+  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(60.0f, 10.0f, 0.0f)});
   gCoordinator.AddComponent(mCamera, Camera{.projectionTransform = projectionMatrix,
-                                            .cameraLookAt = vec3(0.0f, 10.0f, 0.0f),
+                                            .theta = -2 * M_PI_2,
+                                            .phi = 0,
+                                            .lookAt = vec3(0.0f, 10.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f)});
 
   // set up projection matrix and camera matrix
@@ -188,7 +190,8 @@ void RenderSystem::Update() {
   }
   drawGroundSphere();
   drawGround();
-  auto &cameraTransform = gCoordinator.GetComponent<Transform>(0);
-  auto &camera = gCoordinator.GetComponent<Camera>(0);
-  cameraMatrix = lookAtv(cameraTransform.position, camera.cameraLookAt, camera.cameraUp);
+
+  // Update camera matrix
+  auto &camera = gCoordinator.GetComponent<Camera>(mCamera);
+  cameraMatrix = camera.matrix;
 }
