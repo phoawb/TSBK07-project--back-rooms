@@ -190,7 +190,8 @@ void RenderSystem::Update() {
   }
   drawGroundSphere();
   drawGround();
-  auto &cameraTransform = gCoordinator.GetComponent<Transform>(mCamera);
+
+  // Update camera matrix
   auto &camera = gCoordinator.GetComponent<Camera>(mCamera);
-  cameraMatrix = lookAtv(cameraTransform.position, camera.lookAt, camera.cameraUp);
+  cameraMatrix = camera.matrix;
 }

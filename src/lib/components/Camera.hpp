@@ -4,7 +4,7 @@
 
 struct Camera {
   mat4 projectionTransform;
-  mat4 cameraMatrix;
+  mat4 matrix;
   float theta;
   float phi;
   vec3 lookAt;

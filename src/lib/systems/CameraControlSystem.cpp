@@ -51,7 +51,6 @@ void CameraControlSystem::Update(float dt) {
       transform.position.y -= moveSpeed;
     }
 
-
     // Clamp the rotation angle to be within reasonable values
     camera.phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, camera.phi));
     // make sure theta stays within 0 to 2pi and is positive
@@ -61,6 +60,8 @@ void CameraControlSystem::Update(float dt) {
     camera.lookAt.x = transform.position.x + cos(camera.phi) * cos(camera.theta);
     camera.lookAt.y = transform.position.y + sin(camera.phi);
     camera.lookAt.z = transform.position.z + cos(camera.phi) * sin(camera.theta);
+
+    camera.matrix = lookAtv(transform.position, camera.lookAt, camera.cameraUp);
   }
 }
 
