@@ -1,7 +1,6 @@
 #define MAIN
 
 #include "GL_utilities.h"
-#include "LightManager.hpp"
 #include "MicroGlut.h"
 #include "boxes.h"
 #include "components/Camera.hpp"
