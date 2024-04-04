@@ -8,15 +8,10 @@ class Event;
 
 class RenderSystem : public System {
  public:
-  int getLightCount(const LightManager &lightManager);
-
-  void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional);
 
   void drawSkybox();
 
   void drawGroundSphere();
-
-  void drawGround();
 
   void Init();
 
@@ -29,6 +24,4 @@ class RenderSystem : public System {
   GLuint terrainProgram, noShadeProgram;
   GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
   vec3 groundBallPos = vec3(0, 0, 0);
-
-  LightManager lightManager;
 };
