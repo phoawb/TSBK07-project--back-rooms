@@ -38,12 +38,12 @@ void CameraControlSystem::Update(float dt) {
 
     // Update camera orientation based on IJKL keys
     // Rotate left and right (around the up axis)
-    if (glutKeyIsDown('j')) theta -= rotationSpeed;
-    if (glutKeyIsDown('l')) theta += rotationSpeed;
+    if (glutKeyIsDown('j')) camera.theta -= rotationSpeed;
+    if (glutKeyIsDown('l')) camera.theta += rotationSpeed;
 
     // Rotate up and down (around the right axis)
-    if (glutKeyIsDown('i')) phi += rotationSpeed;
-    if (glutKeyIsDown('k')) phi -= rotationSpeed;
+    if (glutKeyIsDown('i')) camera.phi += rotationSpeed;
+    if (glutKeyIsDown('k')) camera.phi -= rotationSpeed;
 
     if (glutKeyIsDown(GLUT_KEY_UP)) {
       cameraPos.y += cameraSpeed;
@@ -54,17 +54,17 @@ void CameraControlSystem::Update(float dt) {
     transform.position = cameraPos;
 
     // Clamp the rotation angle to be within reasonable values
-    phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, phi));
+    camera.phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, camera.phi));
     // make sure theta stays within 0 to 2pi and is positive
-    theta = fmod(theta, 2 * M_PI);  // fmax(0.f, fmod(theta, 2 * M_PI));
+    camera.theta = fmod(camera.theta, 2 * M_PI);  // fmax(0.f, fmod(theta, 2 * M_PI));
 
     // Calculate new camera target based on orientation
-    camera.cameraLookAt.x = cameraPos.x + cos(phi) * cos(theta);
-    camera.cameraLookAt.y = cameraPos.y + sin(phi);
-    camera.cameraLookAt.z = cameraPos.z + cos(phi) * sin(theta);
+    camera.cameraLookAt.x = cameraPos.x + cos(camera.phi) * cos(camera.theta);
+    camera.cameraLookAt.y = cameraPos.y + sin(camera.phi);
+    camera.cameraLookAt.z = cameraPos.z + cos(camera.phi) * sin(camera.theta);
 
     // Finally, update the camera matrix with the new position and target
-    cameraMatrix = lookAtv(cameraPos, camera.cameraLookAt, camera.cameraUp);
+    // cameraMatrix = lookAtv(cameraPos, camera.cameraLookAt, camera.cameraUp);
   }
 }
 
