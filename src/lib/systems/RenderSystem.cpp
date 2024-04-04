@@ -53,10 +53,6 @@ void RenderSystem::Init() {
   glEnable(GL_CULL_FACE);
   printError("GL inits");
 
-  printf("The entity id is %d\n", mCamera);
-
-  shaderManager.Init();
-
   float far = 1000.0f;
   float near = 0.2f;
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, near, far);
@@ -75,10 +71,9 @@ void RenderSystem::Init() {
   printError("init shader");
   glUseProgram(noShadeProgram);
   glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-
   skyboxModel = LoadModelPlus("objects/skybox.obj");
 
-  printError("init");
+  printError("init RenderSystem");
 }
 
 void RenderSystem::Update() {
