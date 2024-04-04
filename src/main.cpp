@@ -27,9 +27,6 @@ std::__1::shared_ptr<RenderSystem> renderSystem;
 std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
 
 // camera
-vec3 cameraPos(60.f, 10.f, 0.f);
-vec3 cameraLookAt(0.f, 10.f, 0.f);
-vec3 cameraUp(0.f, 1.f, 0.f);
 vec3 groundBallPos = vec3(0, 0, 0);
 
 float theta = -2 * M_PI_2;
@@ -93,28 +90,9 @@ void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional = false) {
 }
 
 void init(void) {
-  glClearColor(0.2, 0.2, 0.5, 0);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  printError("GL inits");
-
   // set up projection matrix and camera matrix
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
   vec3 angles = cameraDirection(theta, phi);
-
-  // Clamp the rotation angle to be within reasonable values
-  phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, phi));
-  // make sure theta stays within 0 to 2pi and is positive
-  theta = fmod(theta, 2 * M_PI);  // fmax(0.f, fmod(theta, 2 * M_PI));
-
-  // Calculate new camera target based on orientation
-  cameraLookAt = cameraPos + angles;
-  cameraLookAt.x = cameraPos.x + cos(phi) * cos(theta);
-  cameraLookAt.y = cameraPos.y + sin(phi);
-  cameraLookAt.z = cameraPos.z + cos(phi) * sin(theta);
-
-  // Finally, update the camera matrix with the new position and target
-  cameraMatrix = lookAtv(cameraPos, cameraLookAt, cameraUp);
 
   // init shaders
   terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
