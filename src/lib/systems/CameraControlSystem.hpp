@@ -8,7 +8,7 @@ class CameraControlSystem : public System {
  public:
   void Init();
 
-  void Update(float dt);
+  void Update(int mouseX, int mouseY);
 
  private:
   void InputListener(Event& event);

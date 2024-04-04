@@ -22,6 +22,11 @@ std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
 
 Coordinator gCoordinator;
 
+int deltaMouseX = 0;
+int deltaMouseY = 0;
+int lastMouseX = 0;
+int lastMouseY = 0;
+
 struct WallProps {
   int numWalls;
   std::vector<mat4> translations;
@@ -33,7 +38,7 @@ void display(void) {
   // clear the screen
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  cameraControlSystem->Update(0.0f);
+  cameraControlSystem->Update(deltaMouseX, deltaMouseY);
   renderSystem->Update();
 
   printError("display");
@@ -45,6 +50,10 @@ void mouse(int x, int y) {
   // This function is included in case you want some hints about using passive
   // mouse movement. Uncomment to see mouse coordinates: printf("%d %d\n", x,
   // y);
+  deltaMouseX = x - lastMouseX;
+  deltaMouseY = y - lastMouseY;
+  lastMouseX = x;
+  lastMouseY = y;
 }
 
 void onTimer(int value) {
@@ -74,7 +83,7 @@ int main(int argc, char **argv) {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
   glutInitContextVersion(3, 2);
-  glutInitWindowSize(600, 600);
+  glutInitWindowSize(800, 800);
   glutCreateWindow("TSBK07 - Project");
   glutDisplayFunc(display);
 
