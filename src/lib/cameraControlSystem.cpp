@@ -32,8 +32,8 @@ void CameraControlSystem::Update(float dt) {
 
     transform.position = cameraPos;
 
-    printf("Entity id: %d\n", entity);
-    printf("CCS::Camera position: %f %f %f\n", cameraPos.x, cameraPos.y, cameraPos.z);
+    // printf("Entity id: %d\n", entity);
+    // printf("CCS::Camera position: %f %f %f\n", cameraPos.x, cameraPos.y, cameraPos.z);
 
     // Update camera orientation based on IJKL keys
     // Rotate left and right (around the up axis)

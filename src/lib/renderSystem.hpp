@@ -7,20 +7,39 @@ class Event;
 
 class RenderSystem : public System {
  public:
+  void generateBoxes();
+
+  int getLightCount(const LightManager &lightManager);
+
+  void placeLight(vec3 lightPos, vec3 lightColor, bool isDirectional);
+
+  void drawSkybox();
+
+  void drawGroundSphere();
+
+  void drawGround();
+
+  void drawObjects();
+
   void Init();
 
   void Update();
 
  private:
-  // void WindowSizeListener(Event& event);
-
-  // std::unique_ptr<Shader> shader;
-
   Entity mCamera;
   mat4 projectionMatrix;
-
   float theta = 0;
   float phi = 0;
+  mat4 cameraMatrix;
+  Model *groundSphereModel, *skyboxModel, *groundModel;
+  // Reference to shader program
+  GLuint terrainProgram, noShadeProgram;
+  // Reference to textures
+  GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
+  vec3 groundBallPos = vec3(0, 0, 0);
+
+  ObjectManager objectManager;
+  LightManager lightManager;
 
   // GLuint mVao{};
   // GLuint mVboVertices{};
