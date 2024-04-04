@@ -1,4 +1,4 @@
-#include "renderSystem.hpp"
+#include "RenderSystem.hpp"
 
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
@@ -46,7 +46,6 @@ void RenderSystem::drawSkybox() {
   glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
   // set texture as skybox texture (texUnit = 2)
   glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), 2);
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
   DrawModel(skyboxModel, noShadeProgram, "inPosition", NULL, "inTexCoord");
 
   // enable depth test and culling
@@ -80,32 +79,28 @@ void RenderSystem::drawGroundSphere() {
   DrawModel(groundSphereModel, terrainProgram, "inPosition", "inNormal", "inTexCoord");
 }
 
-void RenderSystem::drawObjects() {}
-
 void RenderSystem::Init() {
   glClearColor(0.2, 0.2, 0.5, 0);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   printError("GL inits");
 
-  projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
-
-  mCamera = gCoordinator.CreateEntity();
   printf("The entity id is %d\n", mCamera);
 
+  float far = 1000.0f;
+  float near = 0.2f;
+  mat4 projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, near, far);
+
+  // Add camera and transform component to entity
+  mCamera = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(mCamera, Transform{.position = vec3(10.0f, 0.0f, 100.0f)});
   gCoordinator.AddComponent(mCamera, Camera{.projectionTransform = projectionMatrix,
                                             .cameraLookAt = vec3(0.0f, 10.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f)});
 
-  // set up projection matrix and camera matrix
-  projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
-
-  // init shaders
   terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
   noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
   printError("init shader");
-  // end init shaders
 
   // Upload projection matrix to shader
   glUseProgram(terrainProgram);
