@@ -10,6 +10,7 @@
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 #include "ground.h"
+#include "mapGen.h"
 
 extern Coordinator gCoordinator;
 
@@ -93,11 +94,11 @@ void RenderSystem::Init() {
 
   // Add camera and transform component to entity
   mCamera = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(60.0f, 10.0f, 0.0f)});
+  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(-200.0f, 50.0f, 0.0f)});
   gCoordinator.AddComponent(mCamera, Camera{.projectionTransform = projectionMatrix,
-                                            .theta = -2 * M_PI_2,
+                                            .theta = 0,
                                             .phi = 0,
-                                            .lookAt = vec3(0.0f, 10.0f, 0.0f),
+                                            .lookAt = vec3(0.0f, 50.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f)});
 
   // set up projection matrix and camera matrix
@@ -144,28 +145,19 @@ void RenderSystem::Init() {
   // load models
   groundSphereModel = LoadModelPlus("objects/groundsphere.obj");
   skyboxModel = LoadModelPlus("objects/skybox.obj");
-  groundModel = getGroundModel(50.0);
-  // begin generate boxes
-  // wall 1
-  auto wall1 = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(wall1, Transform{.translation = T(-50, 0.0, -50), .rotation = Ry(0)});
-  gCoordinator.AddComponent(wall1,
-                            Renderable{.model = getBoxModel(100, 50, 2), .program = terrainProgram, .texUnit = 1});
-  // wall 2
-  auto wall2 = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(wall2, Transform{.translation = T(-50, 0, 50), .rotation = Ry(M_PI / 2)});
-  gCoordinator.AddComponent(wall2,
-                            Renderable{.model = getBoxModel(100, 50, 2), .program = terrainProgram, .texUnit = 1});
-  // wall 3
-  auto wall3 = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(wall3, Transform{.translation = T(-50, 0, -50), .rotation = Ry(M_PI / 2)});
-  gCoordinator.AddComponent(wall3,
-                            Renderable{.model = getBoxModel(100, 50, 2), .program = terrainProgram, .texUnit = 1});
-  // ceiling
-  auto ceiling = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(ceiling, Transform{.translation = T(-50, 50, -50), .rotation = Ry(0)});
-  gCoordinator.AddComponent(ceiling,
-                            Renderable{.model = getBoxModel(100, 2, 100), .program = terrainProgram, .texUnit = 1});
+  groundModel = getGroundModel(100.0);
+  BoxProps props = genWalls();  //
+  for (int i = 0; i < props.numBoxes; i++) {
+    auto wall = gCoordinator.CreateEntity();
+    gCoordinator.AddComponent(
+        wall, Transform{.translation = T(props.Positions[i].x, props.Positions[i].y, props.Positions[i].z),
+                        .rotation = Ry(props.Rotations[i])});
+    gCoordinator.AddComponent(
+        wall, Renderable{.model = getBoxModel(props.Dimensions[i].x, props.Dimensions[i].y, props.Dimensions[i].z),
+                         .program = terrainProgram,
+                         .texUnit = props.TexUnits[i]});
+  }
+
   // end load models
 
   printError("init");
