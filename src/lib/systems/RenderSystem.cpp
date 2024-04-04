@@ -8,6 +8,7 @@
 #include "components/Camera.hpp"
 #include "components/Renderable.hpp"
 #include "components/Transform.hpp"
+#include "core/Coordinator.hpp"
 #include "ground.h"
 
 extern Coordinator gCoordinator;
