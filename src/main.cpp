@@ -87,12 +87,12 @@ void createWallEntities(WallProps wallProps) {
 }
 
 void createLightEntities() {
-  int lightCount = 3;
+  int lightCount = 1;
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
     vec3 color = vec3(1, 1, 1);
-    vec3 pos = vec3(randomX, 0, randomY);
+    vec3 pos = vec3(randomX, 50, randomY);
     auto lightEntity = gCoordinator.CreateEntity();
     gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
     gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN, .isDirectional = 0});
