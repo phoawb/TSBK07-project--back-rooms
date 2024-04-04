@@ -45,16 +45,17 @@ void display(void) {
 
   cameraControlSystem->Update(deltaMouseX, deltaMouseY);
   renderSystem->Update();
+  lightingSystem->Update();
 
   printError("display");
 
   glutSwapBuffers();
 }
 
+/// @brief Mouse callback function
+/// @param x
+/// @param y
 void mouse(int x, int y) {
-  // This function is included in case you want some hints about using passive
-  // mouse movement. Uncomment to see mouse coordinates: printf("%d %d\n", x,
-  // y);
   deltaMouseX = x - lastMouseX;
   deltaMouseY = y - lastMouseY;
   lastMouseX = x;
@@ -64,8 +65,6 @@ void mouse(int x, int y) {
 void onTimer(int value) {
   // pass time
   t = (GLfloat)glutGet(GLUT_ELAPSED_TIME) / 200;
-  // check input
-  // checkInput();
 
   glutPostRedisplay();
   glutTimerFunc(20, &onTimer, value);  // 50 FPS
@@ -87,15 +86,15 @@ void createWallEntities(WallProps wallProps) {
 }
 
 void createLightEntities() {
-  int lightCount = 1;
+  int lightCount = 2;
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
-    vec3 color = vec3(1, 1, 1);
+    vec3 color = vec3(0.4, 0.4, 0.4);
     vec3 pos = vec3(randomX, 50, randomY);
     auto lightEntity = gCoordinator.CreateEntity();
     gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
-    gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN, .isDirectional = 0});
+    gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN});
   }
 }
 
@@ -123,8 +122,6 @@ int main(int argc, char** argv) {
     signature.set(gCoordinator.GetComponentType<Transform>());
     gCoordinator.SetSystemSignature<CameraControlSystem>(signature);
   }
-
-  cameraControlSystem->Init();
 
   renderSystem = gCoordinator.RegisterSystem<RenderSystem>();
   {

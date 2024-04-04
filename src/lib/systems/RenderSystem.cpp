@@ -4,7 +4,6 @@
 #include "LittleOBJLoader.h"
 #include "ShaderManager.hpp"
 #include "boxes.h"
-#include "camera.hpp"
 #include "components/Camera.hpp"
 #include "components/Renderable.hpp"
 #include "components/Transform.hpp"
