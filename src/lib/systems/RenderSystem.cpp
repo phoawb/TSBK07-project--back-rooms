@@ -98,6 +98,10 @@ void RenderSystem::Init() {
                                             .cameraLookAt = vec3(0.0f, 10.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f)});
 
+  // set up projection matrix and camera matrix
+  projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1000.0);
+
+  // init shaders
   terrainProgram = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
   noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
   printError("init shader");
