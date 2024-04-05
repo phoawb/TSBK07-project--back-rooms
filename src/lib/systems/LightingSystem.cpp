@@ -33,7 +33,7 @@ void LightingSystem::Init() {
 void LightingSystem::Update() {
   // random number between 0 and 1
   float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-  printf("random: %f\n", random);
+  // printf("random: %f\n", random);
   int lightCount = mEntities.size();
   vec3 lightSourcesColors[lightCount];
   vec3 lightSourcesDirPos[lightCount];
