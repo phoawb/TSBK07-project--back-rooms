@@ -137,7 +137,7 @@ void RenderSystem::Init() {
   glActiveTexture(GL_TEXTURE1);
   LoadTGATextureSimple("textures/wall.tga", &backroomsWallTex);
   glActiveTexture(GL_TEXTURE2);
-  LoadTGATextureSimple("textures/skybox.tga", &skyboxTex);
+  LoadTGATextureSimple("textures/skybox3.tga", &skyboxTex);
   glActiveTexture(GL_TEXTURE3);
   LoadTGATextureSimple("textures/grass.tga", &grassTex);
   // end load textures
