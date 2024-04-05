@@ -18,6 +18,7 @@ CPP_SOURCES = \
 $(LIBDIR)/boxes.cpp \
 $(LIBDIR)/ground.cpp \
 $(LIBDIR)/systems/RenderSystem.cpp \
+$(LIBDIR)/systems/LightingSystem.cpp \
 $(LIBDIR)/systems/CameraControlSystem.cpp \
 $(LIBDIR)/mapGen.cpp \
 
@@ -40,4 +41,4 @@ main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -I $(COMMONDIR) -I $(LIBDIR) -c $< -o $@
 
 clean :
-	rm main
+	rm main main.o

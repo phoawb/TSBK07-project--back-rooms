@@ -1,7 +1,7 @@
 #include "boxes.h"
 
 /// @brief Create a box model
-Model *getBoxModel(float width = 50.0f, float height = 50.0f, float depth = 1.0f) {
+Model *getBoxModel(float width = 50.0f, float height = 50.0f, float depth = 1.0f, float textureScale = 1.0f) {
   vec3 vertices[] = {
       // front
       vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, width), vec3(0.0f, height, 0.0f), vec3(0.0f, height, width),
@@ -30,18 +30,19 @@ Model *getBoxModel(float width = 50.0f, float height = 50.0f, float depth = 1.0f
       // bottom
       vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)};
 
-  vec2 tex_coords[] = {// Front face
-                       vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f),
-                       // Back face
-                       vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f),
-                       // Right face
-                       vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f),
-                       // Left face
-                       vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f),
-                       // Top face
-                       vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f),
-                       // Bottom face
-                       vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f)};
+  vec2 tex_coords[] = {
+      // Front face
+      vec2(0.0f, 0.0f), vec2(textureScale, 0.0f), vec2(0.0f, textureScale), vec2(textureScale, textureScale),
+      // Back face
+      vec2(0.0f, 0.0f), vec2(textureScale, 0.0f), vec2(0.0f, textureScale), vec2(textureScale, textureScale),
+      // Right face
+      vec2(0.0f, 0.0f), vec2(textureScale, 0.0f), vec2(0.0f, textureScale), vec2(textureScale, textureScale),
+      // Left face
+      vec2(0.0f, 0.0f), vec2(textureScale, 0.0f), vec2(0.0f, textureScale), vec2(textureScale, textureScale),
+      // Top face
+      vec2(0.0f, 0.0f), vec2(textureScale, 0.0f), vec2(0.0f, textureScale), vec2(textureScale, textureScale),
+      // Bottom face
+      vec2(0.0f, 0.0f), vec2(textureScale, 0.0f), vec2(0.0f, textureScale), vec2(textureScale, textureScale)};
 
   GLuint indices[] = {// front
                       0, 1, 2, 1, 3, 2,
