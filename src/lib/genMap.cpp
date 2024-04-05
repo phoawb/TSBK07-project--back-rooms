@@ -1,6 +1,14 @@
-#include "mapGen.h"
+#include "genMap.h"
 
+#include <boxes.h>
 #include <stdio.h>
+
+#include "ShaderManager.hpp"
+#include "components/Renderable.hpp"
+#include "components/Transform.hpp"
+#include "core/Coordinator.hpp"
+
+extern Coordinator gCoordinator;
 
 const int MAP_SIZE = 100;
 const int TILE_SIZE = 10;
@@ -26,22 +34,26 @@ void createMapBounds(BoxProps& boxProps) {
   boxProps.Positions.push_back({MAP_SIZE, 0.0, -MAP_SIZE});
   boxProps.Rotations.push_back(2 * M_PI);
   boxProps.Dimensions.push_back({MAP_SIZE * 2, WALL_TALLNESS, WALL_THICKNESS});
-  boxProps.TexUnits.push_back(1);
+  boxProps.TextureTypes.push_back(TextureType::OFFICE_WALL);
+  boxProps.TextureScale.push_back(1);
 
   boxProps.Positions.push_back({-MAP_SIZE - WALL_THICKNESS, 0.0, -MAP_SIZE});
   boxProps.Rotations.push_back(0);
   boxProps.Dimensions.push_back({MAP_SIZE * 2, WALL_TALLNESS, WALL_THICKNESS});
-  boxProps.TexUnits.push_back(1);
+  boxProps.TextureTypes.push_back(TextureType::OFFICE_WALL);
+  boxProps.TextureScale.push_back(1);
 
   boxProps.Positions.push_back({-MAP_SIZE, 0.0, MAP_SIZE + WALL_THICKNESS});
   boxProps.Rotations.push_back(M_PI_2);
   boxProps.Dimensions.push_back({MAP_SIZE * 2, WALL_TALLNESS, WALL_THICKNESS});
-  boxProps.TexUnits.push_back(1);
+  boxProps.TextureTypes.push_back(TextureType::OFFICE_WALL);
+  boxProps.TextureScale.push_back(1);
 
   boxProps.Positions.push_back({-MAP_SIZE, 0.0, -MAP_SIZE});
   boxProps.Rotations.push_back(M_PI_2);
   boxProps.Dimensions.push_back({MAP_SIZE * 2, WALL_TALLNESS, WALL_THICKNESS});
-  boxProps.TexUnits.push_back(1);
+  boxProps.TextureTypes.push_back(TextureType::OFFICE_WALL);
+  boxProps.TextureScale.push_back(1);
 }
 
 void createStartEndRoom(std::vector<std::vector<Tile>>& grid, vec2 pos, bool iseEndRoom) {
@@ -119,7 +131,8 @@ void grid2BoxProps(std::vector<std::vector<Tile>> grid, BoxProps& props) {
         props.Rotations.push_back(grid[x][y].rotate ? M_PI_2 : 0);
         GLfloat tileSize = grid[x][y].isStartEndRoom ? 2 : TILE_SIZE;
         props.Dimensions.push_back({TILE_SIZE, WALL_TALLNESS, tileSize});
-        props.TexUnits.push_back(1);
+        props.TextureTypes.push_back(TextureType::OFFICE_WALL);
+        props.TextureScale.push_back(1);
       }
     }
   }
@@ -131,9 +144,25 @@ void createCeiling(BoxProps& props) {
   props.Positions.push_back({-100.0, WALL_TALLNESS, -100.0});
   props.Rotations.push_back(0);
   props.Dimensions.push_back({MAP_SIZE * 2, WALL_THICKNESS, MAP_SIZE * 2});
-  props.TexUnits.push_back(1);
+  props.TextureTypes.push_back(TextureType::OFFICE_CEILING);
+  props.TextureScale.push_back(5);
 }
-BoxProps genWalls() {
+
+void placeWallEnteties(BoxProps& props) {
+  printf("Placing walls\n");
+  for (int i = 0; i < props.numBoxes; i++) {
+    auto entity = gCoordinator.CreateEntity();
+    gCoordinator.AddComponent(
+        entity, Transform{.translation = T(props.Positions[i].x, props.Positions[i].y, props.Positions[i].z),
+                          .rotation = Ry(props.Rotations[i])});
+    gCoordinator.AddComponent(entity, Renderable{.model = getBoxModel(props.Dimensions[i].x, props.Dimensions[i].y,
+                                                                      props.Dimensions[i].z, props.TextureScale[i]),
+                                                 .shader = TERRAIN,
+                                                 .texture = props.TextureTypes[i]});
+  }
+}
+
+void genMap() {
   printf("Generating walls\n");
   BoxProps props;
   props.numBoxes = 0;
@@ -146,8 +175,8 @@ BoxProps genWalls() {
   grid2BoxProps(grid, props);
   createCeiling(props);
 
+  placeWallEnteties(props);
+
   printf("Generated %d walls\n", props.numBoxes);
   printf("First wall at (%f, %f, %f)\n", props.Positions[0].x, props.Positions[0].y, props.Positions[0].z);
-
-  return props;
 };

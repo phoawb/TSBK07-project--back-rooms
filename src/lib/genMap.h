@@ -6,6 +6,7 @@
 
 #include "GL_utilities.h"
 #include "VectorUtils4.h"
+#include "core/Enums.hpp"
 
 // Tile enum as used in the CPP file
 
@@ -24,7 +25,8 @@ struct BoxProps {
   std::vector<vec3> Positions;
   std::vector<float> Rotations;
   std::vector<vec3> Dimensions;
-  std::vector<GLuint> TexUnits;
+  std::vector<TextureType> TextureTypes;
+  std::vector<int> TextureScale;
 };
 
 // Function declarations
@@ -35,6 +37,7 @@ bool isOccupied(std::vector<std::vector<Tile>>& grid, int x, int y);
 void createRandomWalls(std::vector<std::vector<Tile>>& grid, int noOfWalls);
 void grid2BoxProps(std::vector<std::vector<Tile>> grid, BoxProps& props);
 void createCeiling(BoxProps& props);
-BoxProps genWalls();
+void placeWallEnteties(BoxProps& props);
+void genMap();
 
 #endif  // MAPGEN_H
