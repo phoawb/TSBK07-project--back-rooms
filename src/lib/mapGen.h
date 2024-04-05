@@ -13,8 +13,8 @@ class Tile {
  public:
   enum Type { EMPTY, WALL, PILLAR_ROOM, OFFICE_ROOM, HALLWAY, START_ROOM, END_ROOM };
   Tile(Type inputType = EMPTY) : type(inputType){};
-  bool isOccupied() { return type != Type::EMPTY; }
   bool rotate = false;
+  bool isStartEndRoom = false;
   Type type = Type::EMPTY;
 };
 
@@ -29,9 +29,12 @@ struct BoxProps {
 
 // Function declarations
 std::vector<std::vector<Tile>> initGrid();
-void createMapBounds(std::vector<std::vector<Tile>> &grid);
-void createStartRoom(std::vector<std::vector<Tile>> &grid, vec2 pos);
-BoxProps grid2BoxProps(std::vector<std::vector<Tile>> grid);
+void createMapBounds(BoxProps& BoxProps);
+void createStartEndRoom(std::vector<std::vector<Tile>>& grid, vec2 pos, bool iseEndRoom = false);
+bool isOccupied(std::vector<std::vector<Tile>>& grid, int x, int y);
+void createRandomWalls(std::vector<std::vector<Tile>>& grid, int noOfWalls);
+void grid2BoxProps(std::vector<std::vector<Tile>> grid, BoxProps& props);
+void createCeiling(BoxProps& props);
 BoxProps genWalls();
 
 #endif  // MAPGEN_H
