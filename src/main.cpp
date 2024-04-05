@@ -17,7 +17,7 @@
 #include "systems/RenderSystem.hpp"
 #include "vector"
 
-float GROUND_SIZE = 50;
+float GROUND_SIZE = 100;
 
 GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
