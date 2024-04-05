@@ -45,16 +45,17 @@ void display(void) {
 
   cameraControlSystem->Update(deltaMouseX, deltaMouseY);
   renderSystem->Update();
+  lightingSystem->Update();
 
   printError("display");
 
   glutSwapBuffers();
 }
 
+/// @brief Mouse callback function
+/// @param x
+/// @param y
 void mouse(int x, int y) {
-  // This function is included in case you want some hints about using passive
-  // mouse movement. Uncomment to see mouse coordinates: printf("%d %d\n", x,
-  // y);
   deltaMouseX = x - lastMouseX;
   deltaMouseY = y - lastMouseY;
   lastMouseX = x;
@@ -64,8 +65,6 @@ void mouse(int x, int y) {
 void onTimer(int value) {
   // pass time
   t = (GLfloat)glutGet(GLUT_ELAPSED_TIME) / 200;
-  // check input
-  // checkInput();
 
   glutPostRedisplay();
   glutTimerFunc(20, &onTimer, value);  // 50 FPS
@@ -74,26 +73,28 @@ void onTimer(int value) {
 void createWallEntities(WallProps wallProps) {
   for (int i = 0; i < wallProps.numWalls; i++) {
     auto entity = gCoordinator.CreateEntity();
+    TextureType texture = i < wallProps.numWalls - 1 ? OFFICE_WALL : OFFICE_CEILING;
+    float textureScale = i < wallProps.numWalls - 1 ? 1.0f : 4.0f;
     gCoordinator.AddComponent(entity,
                               Transform{.translation = wallProps.translations[i], .rotation = wallProps.rotations[i]});
     gCoordinator.AddComponent(entity,
                               Renderable{.model = getBoxModel(wallProps.dimensions[i].x, wallProps.dimensions[i].y,
-                                                              wallProps.dimensions[i].z),
+                                                              wallProps.dimensions[i].z, textureScale),
                                          .shader = TERRAIN,
-                                         .texture = OFFICE_WALL});
+                                         .texture = texture});
   }
 }
 
 void createLightEntities() {
-  int lightCount = 3;
+  int lightCount = 2;
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
-    vec3 color = vec3(1, 1, 1);
-    vec3 pos = vec3(randomX, 0, randomY);
+    vec3 color = vec3(0.4, 0.4, 0.4);
+    vec3 pos = vec3(randomX, 50, randomY);
     auto lightEntity = gCoordinator.CreateEntity();
     gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
-    gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN, .isDirectional = 0});
+    gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN});
   }
 }
 
@@ -121,8 +122,6 @@ int main(int argc, char** argv) {
     signature.set(gCoordinator.GetComponentType<Transform>());
     gCoordinator.SetSystemSignature<CameraControlSystem>(signature);
   }
-
-  cameraControlSystem->Init();
 
   renderSystem = gCoordinator.RegisterSystem<RenderSystem>();
   {

@@ -7,11 +7,6 @@
 
 extern Coordinator gCoordinator;
 
-void CameraControlSystem::Init() {
-  printf("CameraControlSystem::Init\n");
-  // gCoordinator.AddEventListener(METHOD_LISTENER(Events::Window::INPUT, CameraControlSystem::InputListener));
-}
-
 void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
   const float moveSpeed = 0.6f;
   const float rotationSpeed = 0.02f;
@@ -20,7 +15,6 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
   for (auto& entity : mEntities) {
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
     auto& camera = gCoordinator.GetComponent<Camera>(entity);
-
 
     // Update camera position based on WASD keys
     vec3 forward = normalize(camera.lookAt - transform.position);  // Direction camera is facing
@@ -64,16 +58,15 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
 
     // Ensure theta is within 0 to 2pi
     if (camera.theta < 0) {
-        camera.theta += 2 * M_PI;
+      camera.theta += 2 * M_PI;
     } else if (camera.theta > 2 * M_PI) {
-        camera.theta -= 2 * M_PI;
+      camera.theta -= 2 * M_PI;
     }
 
     // Calculate new camera target based on orientation
     camera.lookAt.x = transform.position.x + cos(camera.phi) * cos(camera.theta);
     camera.lookAt.y = transform.position.y + sin(camera.phi);
     camera.lookAt.z = transform.position.z + cos(camera.phi) * sin(camera.theta);
-
 
     camera.matrix = lookAtv(transform.position, camera.lookAt, camera.cameraUp);
   }

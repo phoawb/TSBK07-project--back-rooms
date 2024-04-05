@@ -27,6 +27,10 @@ class ShaderManager {
     glActiveTexture(GL_TEXTURE3);
     LoadTGATextureSimple("textures/grass.tga", &grass);
     tex2id[GRASS] = 3;
+
+    glActiveTexture(GL_TEXTURE4);
+    LoadTGATextureSimple("textures/drop_ceiling.tga", &officeCeiling);
+    tex2id[OFFICE_CEILING] = 4;
   }
   GLuint getShaderId(ShaderType shader) { return shader2id[shader]; }
   int getTexId(TextureType tex) { return tex2id[tex]; }
@@ -34,5 +38,5 @@ class ShaderManager {
  private:
   std::map<ShaderType, GLuint> shader2id;
   std::map<TextureType, int> tex2id;
-  GLuint officeWall, grass, skyboxSky, skyboxCity, dirt, officeFloor, concrete;
+  GLuint officeWall, grass, skyboxSky, skyboxCity, dirt, officeFloor, concrete, officeCeiling;
 };
