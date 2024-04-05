@@ -10,7 +10,6 @@
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
 #include "ground.h"
-#include "mapGen.h"
 
 extern Coordinator gCoordinator;
 extern ShaderManager shaderManager;
