@@ -3,7 +3,6 @@
 #include "GL_utilities.h"
 #include "MicroGlut.h"
 #include "ShaderManager.hpp"
-#include "boxes.h"
 #include "components/Camera.hpp"
 #include "components/Light.hpp"
 #include "components/Renderable.hpp"
@@ -11,13 +10,14 @@
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
+#include "genMap.h"
 #include "ground.h"
 #include "systems/CameraControlSystem.hpp"
 #include "systems/LightingSystem.hpp"
 #include "systems/RenderSystem.hpp"
 #include "vector"
 
-float GROUND_SIZE = 50;
+float GROUND_SIZE = 100;
 
 GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
@@ -31,13 +31,6 @@ int deltaMouseX = 0;
 int deltaMouseY = 0;
 int lastMouseX = 0;
 int lastMouseY = 0;
-
-struct WallProps {
-  int numWalls;
-  std::vector<mat4> translations;
-  std::vector<mat4> rotations;
-  std::vector<vec3> dimensions;
-};
 
 void display(void) {
   // clear the screen
@@ -68,21 +61,6 @@ void onTimer(int value) {
 
   glutPostRedisplay();
   glutTimerFunc(20, &onTimer, value);  // 50 FPS
-}
-
-void createWallEntities(WallProps wallProps) {
-  for (int i = 0; i < wallProps.numWalls; i++) {
-    auto entity = gCoordinator.CreateEntity();
-    TextureType texture = i < wallProps.numWalls - 1 ? OFFICE_WALL : OFFICE_CEILING;
-    float textureScale = i < wallProps.numWalls - 1 ? 1.0f : 4.0f;
-    gCoordinator.AddComponent(entity,
-                              Transform{.translation = wallProps.translations[i], .rotation = wallProps.rotations[i]});
-    gCoordinator.AddComponent(entity,
-                              Renderable{.model = getBoxModel(wallProps.dimensions[i].x, wallProps.dimensions[i].y,
-                                                              wallProps.dimensions[i].z, textureScale),
-                                         .shader = TERRAIN,
-                                         .texture = texture});
-  }
 }
 
 void createLightEntities() {
@@ -143,14 +121,8 @@ int main(int argc, char** argv) {
   createLightEntities();
   lightingSystem->Init();
 
-  int numWalls = 4;
-  std::vector<mat4> translations = {T(-50, 0.0, -50), T(-50, 0, 50), T(-50, 0, -50), T(-50, 50, -50)};
-  std::vector<mat4> rotations = {Ry(0), Ry(M_PI / 2), Ry(M_PI / 2), Ry(0)};
-  std::vector<vec3> dimensions = {vec3(100, 50, 2), vec3(100, 50, 2), vec3(100, 50, 2), vec3(100, 2, 100)};
-
-  WallProps wallProps = {numWalls, translations, rotations, dimensions};
-
-  createWallEntities(wallProps);
+  // createWallEntities(wallProps);
+  genMap();
 
   auto ground = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(ground, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});

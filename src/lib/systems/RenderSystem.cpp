@@ -58,11 +58,11 @@ void RenderSystem::Init() {
 
   // Add camera and transform component to entity
   mCamera = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(60.0f, 10.0f, 0.0f)});
+  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(-200.0f, 50.0f, 0.0f)});
   gCoordinator.AddComponent(mCamera, Camera{.projectionTransform = projectionMatrix,
-                                            .theta = -2 * M_PI_2,
+                                            .theta = 0,
                                             .phi = 0,
-                                            .lookAt = vec3(0.0f, 10.0f, 0.0f),
+                                            .lookAt = vec3(0.0f, 50.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f)});
 
   // init shaders
