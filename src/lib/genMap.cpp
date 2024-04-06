@@ -98,7 +98,7 @@ void createRandomWalls(std::vector<std::vector<Tile>>& grid, int noOfWalls) {
   while (placedWalls < noOfWalls && failedTries < 10000) {
     int x = rand() % GRID_SIZE;
     int y = rand() % GRID_SIZE;
-    printf("Trying to place wall at (%d, %d)\n", x, y);
+    // printf("Trying to place wall at (%d, %d)\n", x, y);
 
     if (isOccupied(grid, x, y)) {
       failedTries++;
