@@ -48,8 +48,8 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     }
 
     // mouse
-    camera.theta += deltaMouseX * mouseSensitivity;
-    camera.phi -= deltaMouseY * mouseSensitivity;
+    // camera.theta += deltaMouseX * mouseSensitivity;
+    // camera.phi -= deltaMouseY * mouseSensitivity;
 
     // Clamp the rotation angle to be within reasonable values
     camera.phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, camera.phi));
