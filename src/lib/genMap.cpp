@@ -13,7 +13,7 @@ extern Coordinator gCoordinator;
 const int MAP_SIZE = 100;
 const int TILE_SIZE = 10;
 const int WALL_THICKNESS = 2;
-const int WALL_TALLNESS = 30;
+const int WALL_TALLNESS = 25;
 const int GRID_SIZE = MAP_SIZE * 2 / TILE_SIZE;
 int START_ROOM_WIDTH = 80 / TILE_SIZE;
 int START_ROOM_HEIGHT = 40 / TILE_SIZE;
@@ -29,31 +29,32 @@ std::vector<std::vector<Tile>> initGrid() {
 
 void createMapBounds(BoxProps& boxProps) {
   // printf("Creating map bounds\n");
+  int boundTextureScale = 6;
   boxProps.numBoxes += 4;
   // printf("Num boxes: %d\n", boxProps.numBoxes);
   boxProps.Positions.push_back({MAP_SIZE, 0.0, -MAP_SIZE});
   boxProps.Rotations.push_back(2 * M_PI);
   boxProps.Dimensions.push_back({MAP_SIZE * 2, WALL_TALLNESS, WALL_THICKNESS});
   boxProps.TextureTypes.push_back(TextureType::OFFICE_WALL);
-  boxProps.TextureScale.push_back(1);
+  boxProps.TextureScale.push_back(boundTextureScale);
 
   boxProps.Positions.push_back({-MAP_SIZE - WALL_THICKNESS, 0.0, -MAP_SIZE});
   boxProps.Rotations.push_back(0);
   boxProps.Dimensions.push_back({MAP_SIZE * 2, WALL_TALLNESS, WALL_THICKNESS});
   boxProps.TextureTypes.push_back(TextureType::OFFICE_WALL);
-  boxProps.TextureScale.push_back(1);
+  boxProps.TextureScale.push_back(boundTextureScale);
 
   boxProps.Positions.push_back({-MAP_SIZE, 0.0, MAP_SIZE + WALL_THICKNESS});
   boxProps.Rotations.push_back(M_PI_2);
   boxProps.Dimensions.push_back({MAP_SIZE * 2, WALL_TALLNESS, WALL_THICKNESS});
   boxProps.TextureTypes.push_back(TextureType::OFFICE_WALL);
-  boxProps.TextureScale.push_back(1);
+  boxProps.TextureScale.push_back(boundTextureScale);
 
   boxProps.Positions.push_back({-MAP_SIZE, 0.0, -MAP_SIZE});
   boxProps.Rotations.push_back(M_PI_2);
   boxProps.Dimensions.push_back({MAP_SIZE * 2, WALL_TALLNESS, WALL_THICKNESS});
   boxProps.TextureTypes.push_back(TextureType::OFFICE_WALL);
-  boxProps.TextureScale.push_back(1);
+  boxProps.TextureScale.push_back(boundTextureScale);
 }
 
 void createStartEndRoom(std::vector<std::vector<Tile>>& grid, vec2 pos, bool iseEndRoom) {
