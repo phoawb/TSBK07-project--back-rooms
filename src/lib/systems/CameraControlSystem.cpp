@@ -10,7 +10,7 @@ extern Coordinator gCoordinator;
 void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
   const float moveSpeed = 0.6f;
   const float rotationSpeed = 0.02f;
-  const float mouseSensitivity = 0.01f;
+  const float mouseSensitivity = 0.003f;
 
   for (auto& entity : mEntities) {
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
@@ -47,9 +47,12 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
       transform.position.y -= moveSpeed;
     }
 
+    const float fullRotation = 2 * M_PI;  // for yaw 2 * pi = 360 degrees
+    const float maxPitch = 0.49 * M_PI;   // for pitch 0.49 * pi = 89 degrees
+
     // mouse
-    // camera.theta += deltaMouseX * mouseSensitivity;
-    // camera.phi -= deltaMouseY * mouseSensitivity;
+    camera.theta = camera.theta + deltaMouseX * mouseSensitivity;  // this is yaw
+    camera.phi -= deltaMouseY * mouseSensitivity;                  // this is pitch
 
     // Clamp the rotation angle to be within reasonable values
     camera.phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, camera.phi));
