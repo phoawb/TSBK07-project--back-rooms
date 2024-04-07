@@ -19,8 +19,7 @@ uniform mat4 model2World;
 void main(void)
 {
 	exWorldPos = vec3(model2World * vec4(inPosition, 1.0)); // world position to be used in fragment shader
-	mat3 normalMatrix1 = mat3(mdlMatrix);
-	exWorldNormal = normalize(normalMatrix1 * inNormal);
+	exWorldNormal = normalize(mat3(model2World) * inNormal);
 	texCoord = inTexCoord;
 	gl_Position = projMatrix * mdlMatrix * vec4(inPosition, 1.0);
 }
