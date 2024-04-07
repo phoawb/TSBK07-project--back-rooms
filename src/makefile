@@ -41,5 +41,4 @@ main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -I $(COMMONDIR) -I $(LIBDIR) -c $< -o $@
 
 clean :
-		rm main main.o $(CPP_OBJECTS)
-
+	rm main main.o $(CPP_OBJECTS)
