@@ -77,6 +77,10 @@ void RenderSystem::Init() {
 
 void RenderSystem::Update() {
   drawSkybox();
+  // upload camera pos
+  auto &cameraPos = gCoordinator.GetComponent<Transform>(mCamera);
+  uploadUniformVec3ToShader(shaderManager.getShaderId(ShaderType::TERRAIN), "cameraPos",
+                            cameraPos.position);  // upload camera position for phong reasons
   for (auto &entity : mEntities) {
     Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
