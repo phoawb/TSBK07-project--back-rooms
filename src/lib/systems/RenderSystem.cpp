@@ -58,9 +58,9 @@ void RenderSystem::Init() {
 
   // Add camera and transform component to entity
   mCamera = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(-200.0f, 50.0f, 0.0f)});
+  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(-85.0f, 10.0f, 80.0f)});
   gCoordinator.AddComponent(mCamera, Camera{.projectionTransform = projectionMatrix,
-                                            .theta = 0,
+                                            .theta = -M_PI_2,
                                             .phi = 0,
                                             .lookAt = vec3(0.0f, 50.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f)});
@@ -77,6 +77,10 @@ void RenderSystem::Init() {
 
 void RenderSystem::Update() {
   drawSkybox();
+  // upload camera pos
+  auto &cameraPos = gCoordinator.GetComponent<Transform>(mCamera);
+  uploadUniformVec3ToShader(shaderManager.getShaderId(ShaderType::TERRAIN), "cameraPos",
+                            cameraPos.position);  // upload camera position for phong reasons
   for (auto &entity : mEntities) {
     Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;

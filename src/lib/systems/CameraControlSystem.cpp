@@ -7,10 +7,12 @@
 
 extern Coordinator gCoordinator;
 
+bool mouseToggle = false;
+
 void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
   const float moveSpeed = 0.6f;
   const float rotationSpeed = 0.02f;
-  const float mouseSensitivity = 0.01f;
+  const float mouseSensitivity = 0.003f;
 
   for (auto& entity : mEntities) {
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
@@ -28,6 +30,7 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     // Right and left (strafe)
     if (glutKeyIsDown('a')) transform.position -= rightDir * moveSpeed;
     if (glutKeyIsDown('d')) transform.position += rightDir * moveSpeed;
+    if (glutKeyIsDown('m')) mouseToggle = !mouseToggle;
 
     // printf("Entity id: %d\n", entity);
     // printf("CCS::Camera position: %f %f %f\n", cameraPos.x, cameraPos.y, cameraPos.z);
@@ -48,9 +51,10 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     }
 
     // mouse
-    camera.theta += deltaMouseX * mouseSensitivity;
-    camera.phi -= deltaMouseY * mouseSensitivity;
-
+    if (mouseToggle) {
+      camera.theta = camera.theta + deltaMouseX * mouseSensitivity;  // this is yaw
+      camera.phi -= deltaMouseY * mouseSensitivity;                  // this is pitch
+    }
     // Clamp the rotation angle to be within reasonable values
     camera.phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, camera.phi));
     // make sure theta stays within 0 to 2pi and is positive
