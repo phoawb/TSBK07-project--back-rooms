@@ -53,7 +53,7 @@ void main(void) {
     vec4 texColor = texture(texUnit, texCoord);
     finalShade = k_a * ambient + k_d * diffuse + k_s * specular;
     // Modulate texture color with the calculated lighting
-    outColor = texColor * vec4(finalShade, 1.0);
+    outColor = vec4(finalShade, 1.0);
 
 /*     for (int i = 0; i < lightCount; ++i) {
         if (isDirectional[i] == 0) { // Assuming 0 for point lights

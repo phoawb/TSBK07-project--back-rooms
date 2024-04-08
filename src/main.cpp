@@ -64,12 +64,12 @@ void onTimer(int value) {
 }
 
 void createLightEntities() {
-  int lightCount = 2;
+  int lightCount = 1;
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
     vec3 color = vec3(1.0, 1.0, 1.0);
-    vec3 pos = vec3(randomX, 25, randomY);
+    vec3 pos = vec3(randomX, 0, randomY);
     auto lightEntity = gCoordinator.CreateEntity();
     gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
     gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN});

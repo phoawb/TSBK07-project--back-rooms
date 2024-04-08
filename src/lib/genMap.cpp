@@ -170,11 +170,11 @@ void genMap() {
 
   std::vector<std::vector<Tile>> grid = initGrid();
   createMapBounds(props);
-  createStartEndRoom(grid, {0, 0});
+  // createStartEndRoom(grid, {0, 0});
   createStartEndRoom(grid, {12, 16}, true);  // act as endroom for now
-  createRandomWalls(grid, 40);
+  createRandomWalls(grid, 1);
   grid2BoxProps(grid, props);
-  createCeiling(props);
+  // createCeiling(props);
 
   placeWallEnteties(props);
 
