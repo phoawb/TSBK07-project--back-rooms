@@ -18,6 +18,7 @@ extern AssetManager assetManager;
 void RenderSystem::drawSkybox() {
   auto skyboxModel = assetManager.getModel(ModelType::SKYBOX);
   auto shaderId = assetManager.getShaderId(ShaderType::NO_SHADE);
+  auto texUnit = assetManager.getTexId(SKYBOX_SKY);
 
   glUseProgram(shaderId);
 
@@ -42,8 +43,8 @@ void RenderSystem::drawSkybox() {
   mat4 total = rot * trans;
   mat4 scale = S(20.0f, 20.0f, 20.0f);
   total = total * scale;
+
   glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
-  int texUnit = assetManager.getTexId(SKYBOX_SKY);
   glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
   DrawModel(skyboxModel, shaderId, "inPosition", NULL, "inTexCoord");
 
