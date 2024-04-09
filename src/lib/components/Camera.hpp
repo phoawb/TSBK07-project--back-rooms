@@ -9,6 +9,7 @@ struct Camera {
   float phi;
   vec3 lookAt;
   vec3 cameraUp;
+  vec3 dimensions;
 
   /*
     static mat4 MakeProjectionTransform(float fov, float nearClip, float farClip, unsigned int viewWidth,

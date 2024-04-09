@@ -4,6 +4,7 @@
 #include "LittleOBJLoader.h"
 #include "ShaderManager.hpp"
 #include "boxes.h"
+#include "components/AABB.hpp"
 #include "components/Camera.hpp"
 #include "components/Renderable.hpp"
 #include "components/Transform.hpp"
@@ -36,7 +37,6 @@ void RenderSystem::drawSkybox() {
   mat4 scale = S(20.0f, 20.0f, 20.0f);
   total = total * scale;
   glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
-  // set texture as skybox texture (texUnit = 2)
   int texUnit = shaderManager.getTexId(SKYBOX_SKY);
   glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), texUnit);
   DrawModel(skyboxModel, noShadeProgram, "inPosition", NULL, "inTexCoord");
@@ -44,6 +44,22 @@ void RenderSystem::drawSkybox() {
   // enable depth test and culling
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
+}
+
+void RenderSystem::drawCameraSphere(vec3 cameraPos, mat4 cameraMatrix) {
+  glDisable(GL_CULL_FACE);
+  mat4 trans = T(cameraPos.x, cameraPos.y, cameraPos.z - 10);
+  mat4 m2w = trans;
+  mat4 total = cameraMatrix * m2w;
+  auto shaderId = shaderManager.getShaderId(ShaderType::TERRAIN);
+  int texUnit = shaderManager.getTexId(TextureType::GRASS);
+  Model *model = LoadModelPlus("objects/groundsphere.obj");
+  glUseProgram(shaderId);
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "model2World"), 1, GL_TRUE, m2w.m);
+  glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
+  DrawModel(model, shaderId, "inPosition", "inNormal", "inTexCoord");
 }
 
 void RenderSystem::Init() {
@@ -58,15 +74,28 @@ void RenderSystem::Init() {
 
   // Add camera and transform component to entity
   mCamera = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(mCamera, Transform{.position = vec3(-85.0f, 10.0f, 80.0f)});
+
+  printf("Camera entity: %d\n", mCamera);
+
+  // Camera Attributes
+  float cameraSide = 1;
+  vec3 cameraStartPos = vec3(-85.0f, 10.0f, 80.0f);
+  vec3 cameraDimensions = vec3(cameraSide, cameraSide, cameraSide);
+
+  // Add component to entity
+  gCoordinator.AddComponent(mCamera, Transform{.position = cameraStartPos});
   gCoordinator.AddComponent(mCamera, Camera{.projectionTransform = projectionMatrix,
                                             .theta = -M_PI_2,
                                             .phi = 0,
                                             .lookAt = vec3(0.0f, 50.0f, 0.0f),
-                                            .cameraUp = vec3(0.0f, 1.0f, 0.0f)});
+                                            .cameraUp = vec3(0.0f, 1.0f, 0.0f),
+                                            .dimensions = cameraDimensions});
+  gCoordinator.AddComponent(mCamera, AABB{.minPoint = cameraStartPos - cameraDimensions/2,
+                                          .maxPoint = cameraStartPos + cameraDimensions/2});
 
-  // init shaders
+  // TODO: use shaderManager
   noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
+
   printError("init shader");
   glUseProgram(noShadeProgram);
   glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
@@ -77,10 +106,6 @@ void RenderSystem::Init() {
 
 void RenderSystem::Update() {
   drawSkybox();
-  // upload camera pos
-  auto &cameraPos = gCoordinator.GetComponent<Transform>(mCamera);
-  uploadUniformVec3ToShader(shaderManager.getShaderId(ShaderType::TERRAIN), "cameraPos",
-                            cameraPos.position);  // upload camera position for phong reasons
   for (auto &entity : mEntities) {
     Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
@@ -98,8 +123,11 @@ void RenderSystem::Update() {
     glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
     DrawModel(model, shaderId, "inPosition", "inNormal", "inTexCoord");
   }
-
-  // Update camera matrix
+  auto &cameraPos = gCoordinator.GetComponent<Transform>(mCamera);
   auto &camera = gCoordinator.GetComponent<Camera>(mCamera);
+  // upload camera position for phong reasons
+  uploadUniformVec3ToShader(shaderManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos.position);
   cameraMatrix = camera.matrix;
+
+  drawCameraSphere(cameraPos.position, cameraMatrix);
 }

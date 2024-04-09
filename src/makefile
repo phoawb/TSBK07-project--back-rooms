@@ -20,6 +20,7 @@ $(LIBDIR)/ground.cpp \
 $(LIBDIR)/systems/RenderSystem.cpp \
 $(LIBDIR)/systems/LightingSystem.cpp \
 $(LIBDIR)/systems/CameraControlSystem.cpp \
+$(LIBDIR)/systems/CollisionSystem.cpp \
 $(LIBDIR)/genMap.cpp \
 
 # Object files
