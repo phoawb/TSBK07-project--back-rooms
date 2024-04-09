@@ -57,7 +57,7 @@ Model *getBoxModel(float width = 50.0f, float height = 50.0f, float depth = 1.0f
                       // bottom
                       20, 22, 21, 21, 22, 23};
 
-  vec3 colors[] = {(100.f, 0.f, 0.f)};
+  vec3 colors[] = {100.f, 0.f, 0.f};
   int numVert = 24, numInd = 36;
   Model *model = LoadDataToModel(vertices, vertex_normals, tex_coords, colors, indices, numVert, numInd);
   return model;
