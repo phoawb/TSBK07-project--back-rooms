@@ -36,7 +36,6 @@ int lastMouseX = 0;
 int lastMouseY = 0;
 
 void display(void) {
-  // clear the screen
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   cameraControlSystem->Update(deltaMouseX, deltaMouseY);
@@ -45,8 +44,6 @@ void display(void) {
   collisionSystem->Update();
 
   printError("display");
-
-  // glutPostRedisplay();
   glutSwapBuffers();
 }
 
@@ -58,12 +55,6 @@ void mouse(int x, int y) {
   deltaMouseY = y - lastMouseY;
   lastMouseX = x;
   lastMouseY = y;
-}
-
-void onTimer(int value) {
-  // pass time
-  t = (GLfloat)glutGet(GLUT_ELAPSED_TIME) / 200;
-  // glutTimerFunc(20, &onTimer, value);  // 50 FPS
 }
 
 void createLightEntities() {
@@ -145,7 +136,6 @@ int main(int argc, char** argv) {
       groundSphere,
       Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = TERRAIN, .texture = GRASS});
 
-  // glutTimerFunc(20, &onTimer, 0);
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);
   glutMainLoop();
