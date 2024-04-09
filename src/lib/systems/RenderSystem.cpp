@@ -78,10 +78,7 @@ void RenderSystem::Init() {
   gCoordinator.AddComponent(mCamera, AABB{.minPoint = cameraStartPos - cameraDimensions / 2,
                                           .maxPoint = cameraStartPos + cameraDimensions / 2});
 
-  // TODO: use shaderManager
-  //noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
   auto shaderId = shaderManager.getShaderId(ShaderType::NO_SHADE);
-
   printError("init shader");
   glUseProgram(shaderId);
   glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
