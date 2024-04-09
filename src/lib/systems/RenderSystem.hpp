@@ -19,6 +19,5 @@ class RenderSystem : public System {
   mat4 projectionMatrix;
   Model *groundSphereModel, *skyboxModel, *groundModel;
   GLuint terrainProgram, noShadeProgram;
-  GLuint backroomsWallTex, backroomsFloorTex, skyboxTex, grassTex;
   vec3 groundBallPos = vec3(0, 0, 0);
 };

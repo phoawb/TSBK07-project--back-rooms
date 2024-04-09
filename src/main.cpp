@@ -3,6 +3,7 @@
 #include "GL_utilities.h"
 #include "MicroGlut.h"
 #include "ShaderManager.hpp"
+#include "components/AABB.hpp"
 #include "components/Camera.hpp"
 #include "components/Light.hpp"
 #include "components/Renderable.hpp"
@@ -13,6 +14,7 @@
 #include "genMap.h"
 #include "ground.h"
 #include "systems/CameraControlSystem.hpp"
+#include "systems/CollisionSystem.hpp"
 #include "systems/LightingSystem.hpp"
 #include "systems/RenderSystem.hpp"
 #include "vector"
@@ -23,6 +25,7 @@ GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
 std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
 std::__1::shared_ptr<LightingSystem> lightingSystem;
+std::__1::shared_ptr<CollisionSystem> collisionSystem;
 
 Coordinator gCoordinator;
 ShaderManager shaderManager;
@@ -33,15 +36,14 @@ int lastMouseX = 0;
 int lastMouseY = 0;
 
 void display(void) {
-  // clear the screen
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   cameraControlSystem->Update(deltaMouseX, deltaMouseY);
   renderSystem->Update();
   lightingSystem->Update();
+  collisionSystem->Update();
 
   printError("display");
-
   glutSwapBuffers();
 }
 
@@ -53,14 +55,6 @@ void mouse(int x, int y) {
   deltaMouseY = y - lastMouseY;
   lastMouseX = x;
   lastMouseY = y;
-}
-
-void onTimer(int value) {
-  // pass time
-  t = (GLfloat)glutGet(GLUT_ELAPSED_TIME) / 200;
-
-  glutPostRedisplay();
-  glutTimerFunc(20, &onTimer, value);  // 50 FPS
 }
 
 void createLightEntities() {
@@ -84,7 +78,6 @@ int main(int argc, char** argv) {
   glutCreateWindow("TSBK07 - Project");
   glutDisplayFunc(display);
 
-  // Start ECS stuff
   gCoordinator.Init();
   shaderManager.Init();
 
@@ -92,6 +85,7 @@ int main(int argc, char** argv) {
   gCoordinator.RegisterComponent<Transform>();
   gCoordinator.RegisterComponent<Camera>();
   gCoordinator.RegisterComponent<Light>();
+  gCoordinator.RegisterComponent<AABB>();
 
   cameraControlSystem = gCoordinator.RegisterSystem<CameraControlSystem>();
   {
@@ -121,7 +115,14 @@ int main(int argc, char** argv) {
   createLightEntities();
   lightingSystem->Init();
 
-  // createWallEntities(wallProps);
+  collisionSystem = gCoordinator.RegisterSystem<CollisionSystem>();
+  {
+    Signature signature;
+    signature.set(gCoordinator.GetComponentType<AABB>());
+    gCoordinator.SetSystemSignature<CollisionSystem>(signature);
+  }
+  collisionSystem->Init();
+
   genMap();
 
   auto ground = gCoordinator.CreateEntity();
@@ -135,7 +136,7 @@ int main(int argc, char** argv) {
       groundSphere,
       Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = TERRAIN, .texture = GRASS});
 
-  glutTimerFunc(20, &onTimer, 0);
+  glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);
   glutMainLoop();
   exit(0);
