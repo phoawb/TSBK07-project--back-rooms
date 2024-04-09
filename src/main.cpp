@@ -70,6 +70,12 @@ void createLightEntities() {
     gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
     gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN});
   }
+
+  auto groundSphere2 = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(groundSphere2, Transform{.translation = T(-20, 0, 0), .rotation = Ry(0)});
+  gCoordinator.AddComponent(
+      groundSphere2,
+      Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = NO_SHADE, .texture = GRASS});
 }
 
 int main(int argc, char** argv) {

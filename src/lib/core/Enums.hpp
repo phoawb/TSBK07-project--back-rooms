@@ -1,5 +1,5 @@
 #pragma once
 
-enum ShaderType { NO_SHADE, TERRAIN };
+enum ShaderType { NO_SHADE, TERRAIN, LIGHT };
 
 enum TextureType { OFFICE_WALL, GRASS, SKYBOX_SKY, SKYBOX_CITY, DIRT, OFFICE_FLOOR, CONCRETE, OFFICE_CEILING };

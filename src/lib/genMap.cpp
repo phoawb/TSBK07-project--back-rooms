@@ -180,8 +180,8 @@ void genMap() {
   createMapBounds(props);
   createStartEndRoom(grid, {0, 0});
   createStartEndRoom(grid, {12, 16}, true);  // act as endroom for now
-  createRandomWalls(grid, 40);
-  // createWall(11, 10, grid);
+  // createRandomWalls(grid, 40);
+  //  createWall(11, 10, grid);
   grid2BoxProps(grid, props);
   createCeiling(props);
 
