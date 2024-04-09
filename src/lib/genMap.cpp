@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "ShaderManager.hpp"
+#include "components/AABB.hpp"
 #include "components/Renderable.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
@@ -160,6 +161,8 @@ void placeWallEnteties(BoxProps& props) {
                                                                       props.Dimensions[i].z, props.TextureScale[i]),
                                                  .shader = TERRAIN,
                                                  .texture = props.TextureTypes[i]});
+    gCoordinator.AddComponent(
+        entity, AABB{.minPoint = props.Positions[i], .maxPoint = props.Positions[i] + props.Dimensions[i]});
   }
 }
 
