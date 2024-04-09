@@ -134,9 +134,8 @@ int main(int argc, char** argv) {
 
   auto groundSphere = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(groundSphere, Transform{.translation = T(-10, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(
-      groundSphere,
-      Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = TERRAIN, .texture = GRASS});
+  auto groundSphereModel = assetManager.getModel(ModelType::SPHERE);
+  gCoordinator.AddComponent(groundSphere, Renderable{.model = groundSphereModel, .shader = TERRAIN, .texture = GRASS});
 
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);

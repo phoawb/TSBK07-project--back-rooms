@@ -23,8 +23,13 @@ void AssetManager::Init() {
   glActiveTexture(GL_TEXTURE4);
   LoadTGATextureSimple("textures/drop_ceiling.tga", &officeCeiling);
   tex2id[OFFICE_CEILING] = 4;
+
+  modelType2Model[SKYBOX] = LoadModelPlus("objects/skybox.obj");
+  modelType2Model[SPHERE] = LoadModelPlus("objects/groundsphere.obj");
 }
 
 GLuint AssetManager::getShaderId(ShaderType shader) { return shader2id[shader]; }
 
 int AssetManager::getTexId(TextureType tex) { return tex2id[tex]; }
+
+Model* AssetManager::getModel(ModelType model) { return modelType2Model[model]; }

@@ -82,7 +82,7 @@ void RenderSystem::Init() {
   printError("init shader");
   glUseProgram(shaderId);
   glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-  skyboxModel = LoadModelPlus("objects/skybox.obj");
+  skyboxModel = assetManager.getModel(ModelType::SKYBOX);
 
   printError("init RenderSystem");
 }
