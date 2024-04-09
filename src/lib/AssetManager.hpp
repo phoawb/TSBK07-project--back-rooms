@@ -6,7 +6,7 @@
 #include "map"
 #include "string"
 
-class ShaderManager {
+class AssetManager {
  public:
   void Init();
 

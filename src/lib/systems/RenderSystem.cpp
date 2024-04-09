@@ -2,7 +2,7 @@
 
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
-#include "ShaderManager.hpp"
+#include "AssetManager.hpp"
 #include "boxes.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
@@ -13,10 +13,10 @@
 #include "ground.h"
 
 extern Coordinator gCoordinator;
-extern ShaderManager shaderManager;
+extern AssetManager assetManager;
 
 void RenderSystem::drawSkybox() {
-  auto shaderId = shaderManager.getShaderId(ShaderType::NO_SHADE);
+  auto shaderId = assetManager.getShaderId(ShaderType::NO_SHADE);
   glUseProgram(shaderId);
   // disable depth test and culling
   glDisable(GL_DEPTH_TEST);
@@ -38,7 +38,7 @@ void RenderSystem::drawSkybox() {
   mat4 scale = S(20.0f, 20.0f, 20.0f);
   total = total * scale;
   glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
-  int texUnit = shaderManager.getTexId(SKYBOX_SKY);
+  int texUnit = assetManager.getTexId(SKYBOX_SKY);
   glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
   DrawModel(skyboxModel, shaderId, "inPosition", NULL, "inTexCoord");
 
@@ -78,7 +78,7 @@ void RenderSystem::Init() {
   gCoordinator.AddComponent(mCamera, AABB{.minPoint = cameraStartPos - cameraDimensions / 2,
                                           .maxPoint = cameraStartPos + cameraDimensions / 2});
 
-  auto shaderId = shaderManager.getShaderId(ShaderType::NO_SHADE);
+  auto shaderId = assetManager.getShaderId(ShaderType::NO_SHADE);
   printError("init shader");
   glUseProgram(shaderId);
   glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
@@ -97,8 +97,8 @@ void RenderSystem::Update() {
     TextureType texture = gCoordinator.GetComponent<Renderable>(entity).texture;
     mat4 m2w = trans * rot;
     mat4 total = cameraMatrix * m2w;
-    auto shaderId = shaderManager.getShaderId(shader);
-    int texUnit = shaderManager.getTexId(texture);
+    auto shaderId = assetManager.getShaderId(shader);
+    int texUnit = assetManager.getTexId(texture);
     glUseProgram(shaderId);
     glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
     glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
@@ -109,7 +109,7 @@ void RenderSystem::Update() {
   auto &cameraPos = gCoordinator.GetComponent<Transform>(mCamera);
   auto &camera = gCoordinator.GetComponent<Camera>(mCamera);
   // upload camera position for phong reasons
-  uploadUniformVec3ToShader(shaderManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos.position);
+  uploadUniformVec3ToShader(assetManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos.position);
   cameraMatrix = camera.matrix;
 
 }

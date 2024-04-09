@@ -1,8 +1,8 @@
 #define MAIN
 
+#include "AssetManager.hpp"
 #include "GL_utilities.h"
 #include "MicroGlut.h"
-#include "ShaderManager.hpp"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
 #include "components/Light.hpp"
@@ -28,7 +28,7 @@ std::__1::shared_ptr<LightingSystem> lightingSystem;
 std::__1::shared_ptr<CollisionSystem> collisionSystem;
 
 Coordinator gCoordinator;
-ShaderManager shaderManager;
+AssetManager assetManager;
 
 int deltaMouseX = 0;
 int deltaMouseY = 0;
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
   glutDisplayFunc(display);
 
   gCoordinator.Init();
-  shaderManager.Init();
+  assetManager.Init();
 
   gCoordinator.RegisterComponent<Renderable>();
   gCoordinator.RegisterComponent<Transform>();
