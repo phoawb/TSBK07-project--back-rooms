@@ -16,8 +16,13 @@ extern Coordinator gCoordinator;
 extern AssetManager assetManager;
 
 void RenderSystem::drawSkybox() {
+  auto skyboxModel = assetManager.getModel(ModelType::SKYBOX);
   auto shaderId = assetManager.getShaderId(ShaderType::NO_SHADE);
+
   glUseProgram(shaderId);
+
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+
   // disable depth test and culling
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
@@ -78,11 +83,6 @@ void RenderSystem::Init() {
   gCoordinator.AddComponent(mCamera, AABB{.minPoint = cameraStartPos - cameraDimensions / 2,
                                           .maxPoint = cameraStartPos + cameraDimensions / 2});
 
-  auto shaderId = assetManager.getShaderId(ShaderType::NO_SHADE);
-  printError("init shader");
-  glUseProgram(shaderId);
-  glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-  skyboxModel = assetManager.getModel(ModelType::SKYBOX);
 
   printError("init RenderSystem");
 }
