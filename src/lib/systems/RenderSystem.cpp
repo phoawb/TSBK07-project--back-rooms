@@ -46,22 +46,6 @@ void RenderSystem::drawSkybox() {
   glEnable(GL_CULL_FACE);
 }
 
-void RenderSystem::drawCameraSphere(vec3 cameraPos, mat4 cameraMatrix) {
-  glDisable(GL_CULL_FACE);
-  mat4 trans = T(cameraPos.x, cameraPos.y, cameraPos.z - 10);
-  mat4 m2w = trans;
-  mat4 total = cameraMatrix * m2w;
-  auto shaderId = shaderManager.getShaderId(ShaderType::TERRAIN);
-  int texUnit = shaderManager.getTexId(TextureType::GRASS);
-  Model *model = LoadModelPlus("objects/groundsphere.obj");
-  glUseProgram(shaderId);
-  glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-  glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
-  glUniformMatrix4fv(glGetUniformLocation(shaderId, "model2World"), 1, GL_TRUE, m2w.m);
-  glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
-  DrawModel(model, shaderId, "inPosition", "inNormal", "inTexCoord");
-}
-
 void RenderSystem::Init() {
   glClearColor(0.2, 0.2, 0.5, 0);
   glEnable(GL_DEPTH_TEST);
@@ -90,8 +74,8 @@ void RenderSystem::Init() {
                                             .lookAt = vec3(0.0f, 50.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f),
                                             .dimensions = cameraDimensions});
-  gCoordinator.AddComponent(mCamera, AABB{.minPoint = cameraStartPos - cameraDimensions/2,
-                                          .maxPoint = cameraStartPos + cameraDimensions/2});
+  gCoordinator.AddComponent(mCamera, AABB{.minPoint = cameraStartPos - cameraDimensions / 2,
+                                          .maxPoint = cameraStartPos + cameraDimensions / 2});
 
   // TODO: use shaderManager
   noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
@@ -129,5 +113,4 @@ void RenderSystem::Update() {
   uploadUniformVec3ToShader(shaderManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos.position);
   cameraMatrix = camera.matrix;
 
-  drawCameraSphere(cameraPos.position, cameraMatrix);
 }

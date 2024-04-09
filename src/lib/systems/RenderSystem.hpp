@@ -9,8 +9,6 @@ class RenderSystem : public System {
  public:
   void drawSkybox();
 
-  void drawCameraSphere(vec3 cameraPos, mat4 cameraMatrix);
-
   void Init();
 
   void Update();
