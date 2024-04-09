@@ -58,10 +58,12 @@ void mouse(int x, int y) {
 }
 
 void createLightEntities() {
-  int lightCount = 2;
+  int lightCount = 4;
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
+    /* int randomX = 0;
+    int randomY = 0; */
     vec3 color = vec3(1.0, 1.0, 1.0);
     vec3 pos = vec3(randomX, 25, randomY);
     auto lightEntity = gCoordinator.CreateEntity();
@@ -131,7 +133,7 @@ int main(int argc, char** argv) {
       ground, Renderable{.model = getGroundModel(GROUND_SIZE), .shader = TERRAIN, .texture = OFFICE_FLOOR});
 
   auto groundSphere = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(groundSphere, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
+  gCoordinator.AddComponent(groundSphere, Transform{.translation = T(-10, 0, 0), .rotation = Ry(0)});
   gCoordinator.AddComponent(
       groundSphere,
       Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = TERRAIN, .texture = GRASS});

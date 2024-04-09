@@ -166,6 +166,11 @@ void placeWallEnteties(BoxProps& props) {
   }
 }
 
+void createWall(int x, int y, std::vector<std::vector<Tile>>& grid) {
+  grid[x][y].type = Tile::WALL;
+  // grid[x][y].rotate = true;
+}
+
 void genMap() {
   // printf("Generating walls\n");
   BoxProps props;
@@ -176,6 +181,7 @@ void genMap() {
   createStartEndRoom(grid, {0, 0});
   createStartEndRoom(grid, {12, 16}, true);  // act as endroom for now
   createRandomWalls(grid, 40);
+  // createWall(11, 10, grid);
   grid2BoxProps(grid, props);
   createCeiling(props);
 

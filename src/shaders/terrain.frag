@@ -18,16 +18,16 @@ uniform vec3 lightSourcesColors[MAX_LIGHTS];
 uniform int isDirectional[MAX_LIGHTS];
 
 void main(void) {
-    vec3 ambientColor = vec3(0.1); // Ambient color if no lights are affecting the fragment
+    vec3 ambientColor = vec3(1.0); // Ambient color if no lights are affecting the fragment
     vec3 finalColor = ambientColor; // Start with ambient color
 
     vec3 finalShade = vec3(0.0);
-    vec3 ambient = vec3(0.3);
+    vec3 ambient = vec3(0.1);
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
-    float specularExponent = 32.0;
+    float specularExponent = 8.0;
     // ambient, diffuse, specular coefficients
-    float k_a = 1, k_d = 5, k_s = 3; 
+    float k_a = 1, k_d = 3, k_s = 3; 
     // attenuation coefficients
     int a = 1, b = 1, c = 0;
 
@@ -45,7 +45,10 @@ void main(void) {
         // specular component
         vec3 reflectDir = reflect(-lightDir, exWorldNormal); // r
         vec3 viewDir = normalize(cameraPos - exWorldPos); // v
-        float spec = pow(max(dot(reflectDir, viewDir), 0.0), specularExponent);
+
+        vec3 halfwayDir = normalize(lightDir + viewDir); // h, blinn-phong
+
+        float spec = pow(max(dot(viewDir, halfwayDir), 0.0), specularExponent);
         specular += spec * attenuation * lightSourcesColors[i];
     }
 
