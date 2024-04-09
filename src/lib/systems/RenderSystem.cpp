@@ -16,7 +16,8 @@ extern Coordinator gCoordinator;
 extern ShaderManager shaderManager;
 
 void RenderSystem::drawSkybox() {
-  glUseProgram(noShadeProgram);
+  auto shaderId = shaderManager.getShaderId(ShaderType::NO_SHADE);
+  glUseProgram(shaderId);
   // disable depth test and culling
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
@@ -29,17 +30,17 @@ void RenderSystem::drawSkybox() {
   skyBoxTransform.m[7] = 0;
   skyBoxTransform.m[11] = 0;
 
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "cameraMatrix"), 1, GL_TRUE, skyBoxTransform.m);
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "cameraMatrix"), 1, GL_TRUE, skyBoxTransform.m);
 
   mat4 trans = T(0.0f, -0.3f, 0.0f);
   mat4 rot = Ry(0);
   mat4 total = rot * trans;
   mat4 scale = S(20.0f, 20.0f, 20.0f);
   total = total * scale;
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
   int texUnit = shaderManager.getTexId(SKYBOX_SKY);
-  glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), texUnit);
-  DrawModel(skyboxModel, noShadeProgram, "inPosition", NULL, "inTexCoord");
+  glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
+  DrawModel(skyboxModel, shaderId, "inPosition", NULL, "inTexCoord");
 
   // enable depth test and culling
   glEnable(GL_DEPTH_TEST);
@@ -78,11 +79,12 @@ void RenderSystem::Init() {
                                           .maxPoint = cameraStartPos + cameraDimensions / 2});
 
   // TODO: use shaderManager
-  noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
+  //noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
+  auto shaderId = shaderManager.getShaderId(ShaderType::NO_SHADE);
 
   printError("init shader");
-  glUseProgram(noShadeProgram);
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+  glUseProgram(shaderId);
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
   skyboxModel = LoadModelPlus("objects/skybox.obj");
 
   printError("init RenderSystem");
