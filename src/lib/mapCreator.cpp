@@ -12,7 +12,22 @@ class Node {
   int treeLayerIndex;
   Node* parent;
 
-  Node(Node* parentNode) : children(), visited(false), parent(parentNode) {}
+  void addChild(Node* child) { children.push_back(*child); }
+  void removeChild(Node* child) {
+    for (int i = 0; i < (int)children.size(); i++) {
+      if (&children[i] == child) {
+        children.erase(children.begin() + i);
+        break;
+      }
+    }
+  }
+  Node(Node* parentNode) : children(), visited(false), parent(parentNode) {
+    if (parentNode != nullptr) {
+      treeLayerIndex = parentNode->treeLayerIndex + 1;
+    } else {
+      treeLayerIndex = 0;
+    }
+  }
 };
 
 class RoomNode {
