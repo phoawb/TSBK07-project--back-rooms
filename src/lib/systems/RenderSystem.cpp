@@ -113,8 +113,7 @@ void RenderSystem::Update() {
   auto &cameraTransform = gCoordinator.GetComponent<Transform>(mCamera);
   auto &camera = gCoordinator.GetComponent<Camera>(mCamera);
   // upload camera position for phong reasons
-  vec3 cameraPos =
-      vec3(cameraTransform.translation.m[3], cameraTransform.translation.m[7], cameraTransform.translation.m[11]);
+  vec3 cameraPos = trans2pos(cameraTransform.translation);
   uploadUniformVec3ToShader(assetManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos);
   cameraMatrix = camera.matrix;
 }

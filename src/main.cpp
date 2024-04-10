@@ -21,6 +21,7 @@
 #include "vector"
 
 float GROUND_SIZE = 100;
+int WINDOW_SIZE = 600;
 
 GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
@@ -78,7 +79,7 @@ int main(int argc, char** argv) {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
   glutInitContextVersion(3, 2);
-  glutInitWindowSize(800, 800);
+  glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
   glutCreateWindow("TSBK07 - Project");
   glutDisplayFunc(display);
 
