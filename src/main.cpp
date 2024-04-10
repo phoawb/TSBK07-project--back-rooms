@@ -62,8 +62,6 @@ void createLightEntities() {
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
-    /* int randomX = 0;
-    int randomY = 0; */
     vec3 color = vec3(1.0, 1.0, 1.0);
     vec3 pos = vec3(randomX, 25, randomY);
     auto lightEntity = gCoordinator.CreateEntity();

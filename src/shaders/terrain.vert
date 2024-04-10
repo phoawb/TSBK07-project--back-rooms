@@ -1,8 +1,8 @@
 #version 150
 
 // model coordinates
-in  vec3 inPosition;
-in  vec3 inNormal;
+in vec3 inPosition;
+in vec3 inNormal;
 in vec2 inTexCoord;
 
 out vec2 texCoord;

@@ -143,7 +143,7 @@ void grid2BoxProps(std::vector<std::vector<Tile>> grid, BoxProps& props) {
 void createCeiling(BoxProps& props) {
   // printf("Creating ceiling\n");
   props.numBoxes += 1;
-  props.Positions.push_back({-100.0, WALL_TALLNESS, -100.0});
+  props.Positions.push_back({-1 * MAP_SIZE, WALL_TALLNESS, -1 * MAP_SIZE});
   props.Rotations.push_back(0);
   props.Dimensions.push_back({MAP_SIZE * 2, WALL_THICKNESS, MAP_SIZE * 2});
   props.TextureTypes.push_back(TextureType::OFFICE_CEILING);
@@ -181,7 +181,7 @@ void genMap() {
   createStartEndRoom(grid, {0, 0});
   createStartEndRoom(grid, {12, 16}, true);  // act as endroom for now
   createRandomWalls(grid, 40);
-  // createWall(11, 10, grid);
+  createWall(11, 10, grid);
   grid2BoxProps(grid, props);
   createCeiling(props);
 
