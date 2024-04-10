@@ -5,4 +5,5 @@
 struct RigidBody {
   vec3 velocity;
   vec3 acceleration;
+  bool isStatic = true;
 };
