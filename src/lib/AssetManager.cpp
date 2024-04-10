@@ -3,6 +3,7 @@
 void AssetManager::Init() {
   shader2id[NO_SHADE] = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
   shader2id[TERRAIN] = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
+  shader2id[LAMP] = loadShaders("shaders/lamp.vert", "shaders/lamp.frag");
 
   glActiveTexture(GL_TEXTURE0);
   LoadTGATextureSimple("textures/floor.tga", &officeFloor);
