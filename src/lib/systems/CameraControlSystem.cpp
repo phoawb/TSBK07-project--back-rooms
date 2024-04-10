@@ -2,6 +2,7 @@
 
 #include "MicroGlut.h"
 #include "components/Camera.hpp"
+#include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 
@@ -17,44 +18,18 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
   for (auto& entity : mEntities) {
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
     auto& camera = gCoordinator.GetComponent<Camera>(entity);
+    auto& rigidBody = gCoordinator.GetComponent<RigidBody>(entity);
 
-    // Update camera position based on WASD keys
-    vec3 forward = normalize(camera.lookAt - transform.position);  // Direction camera is facing
-    forward.y = 0;                                                 // Remove y-component
-    forward = normalize(forward);                                  // Normalize since we altered the length
-    vec3 rightDir = normalize(cross(forward, camera.cameraUp));    // Right direction relative to camera's forward
+    vec3 cameraPosition = vec3(transform.translation.m[3], transform.translation.m[7], transform.translation.m[11]);
 
-    // Forward and backward
-    if (glutKeyIsDown('w')) transform.position += forward * moveSpeed;
-    if (glutKeyIsDown('s')) transform.position -= forward * moveSpeed;
-    // Right and left (strafe)
-    if (glutKeyIsDown('a')) transform.position -= rightDir * moveSpeed;
-    if (glutKeyIsDown('d')) transform.position += rightDir * moveSpeed;
-    if (glutKeyIsDown('m')) mouseToggle = !mouseToggle;
+    // Calculate camera target based on orientation
+    camera.lookAt.x = cameraPosition.x + cos(camera.phi) * cos(camera.theta);
+    camera.lookAt.y = cameraPosition.y + sin(camera.phi);
+    camera.lookAt.z = cameraPosition.z + cos(camera.phi) * sin(camera.theta);
 
-    // printf("Entity id: %d\n", entity);
-    // printf("CCS::Camera position: %f %f %f\n", cameraPos.x, cameraPos.y, cameraPos.z);
+    // Update camera matrix
+    camera.matrix = lookAtv(cameraPosition, camera.lookAt, camera.cameraUp);
 
-    // Update camera orientation based on IJKL keys
-    // Rotate left and right (around the up axis)
-    if (glutKeyIsDown('j')) camera.theta -= rotationSpeed;
-    if (glutKeyIsDown('l')) camera.theta += rotationSpeed;
-
-    // Rotate up and down (around the right axis)
-    if (glutKeyIsDown('i')) camera.phi += rotationSpeed;
-    if (glutKeyIsDown('k')) camera.phi -= rotationSpeed;
-
-    if (glutKeyIsDown(GLUT_KEY_UP)) {
-      transform.position.y += moveSpeed;
-    } else if (glutKeyIsDown(GLUT_KEY_DOWN)) {
-      transform.position.y -= moveSpeed;
-    }
-
-    // mouse
-    if (mouseToggle) {
-      camera.theta = camera.theta + deltaMouseX * mouseSensitivity;  // this is yaw
-      camera.phi -= deltaMouseY * mouseSensitivity;                  // this is pitch
-    }
     // Clamp the rotation angle to be within reasonable values
     camera.phi = fmax(-M_PI_2 + 0.01, fmin(M_PI_2 - 0.01, camera.phi));
     // make sure theta stays within 0 to 2pi and is positive
@@ -67,12 +42,43 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
       camera.theta -= 2 * M_PI;
     }
 
-    // Calculate new camera target based on orientation
-    camera.lookAt.x = transform.position.x + cos(camera.phi) * cos(camera.theta);
-    camera.lookAt.y = transform.position.y + sin(camera.phi);
-    camera.lookAt.z = transform.position.z + cos(camera.phi) * sin(camera.theta);
+    // Update camera position based on WASD keys
+    vec3 forward = normalize(camera.lookAt - cameraPosition);  // Direction camera is facing
+    forward.y = 0;                                                 // Remove y-component
+    forward = normalize(forward);                                  // Normalize since we altered the length
+    vec3 rightDir = normalize(cross(forward, camera.cameraUp));    // Right direction relative to camera's forward
 
-    camera.matrix = lookAtv(transform.position, camera.lookAt, camera.cameraUp);
+    rigidBody.velocity = vec3(0, 0, 0);
+
+    // Forward and backward
+    if (glutKeyIsDown('w'))
+      rigidBody.velocity += forward * moveSpeed;
+    else if (glutKeyIsDown('s'))
+      rigidBody.velocity -= forward * moveSpeed;
+
+    // Left and right
+    if (glutKeyIsDown('a')) rigidBody.velocity -= rightDir * moveSpeed;
+    if (glutKeyIsDown('d')) rigidBody.velocity += rightDir * moveSpeed;
+
+    if (glutKeyIsDown('m')) mouseToggle = !mouseToggle;
+
+    // Update camera orientation based on IJKL keys
+    // Rotate left and right (around the up axis)
+    if (glutKeyIsDown('j')) camera.theta -= rotationSpeed;
+    if (glutKeyIsDown('l')) camera.theta += rotationSpeed;
+
+    // Rotate up and down (around the right axis)
+    if (glutKeyIsDown('i')) camera.phi += rotationSpeed;
+    if (glutKeyIsDown('k')) camera.phi -= rotationSpeed;
+
+    if (glutKeyIsDown(GLUT_KEY_UP)) rigidBody.velocity.y += moveSpeed;
+    if (glutKeyIsDown(GLUT_KEY_DOWN)) rigidBody.velocity.y -= moveSpeed;
+
+    // mouse
+    if (mouseToggle) {
+      camera.theta = camera.theta + deltaMouseX * mouseSensitivity;  // this is yaw
+      camera.phi -= deltaMouseY * mouseSensitivity;                  // this is pitch
+    }
   }
 }
 

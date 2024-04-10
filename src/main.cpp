@@ -16,6 +16,7 @@
 #include "systems/CameraControlSystem.hpp"
 #include "systems/CollisionSystem.hpp"
 #include "systems/LightingSystem.hpp"
+#include "systems/PhysicsSystem.hpp"
 #include "systems/RenderSystem.hpp"
 #include "vector"
 
@@ -26,6 +27,7 @@ std::__1::shared_ptr<RenderSystem> renderSystem;
 std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
 std::__1::shared_ptr<LightingSystem> lightingSystem;
 std::__1::shared_ptr<CollisionSystem> collisionSystem;
+std::__1::shared_ptr<PhysicsSystem> physicsSystem;
 
 Coordinator gCoordinator;
 AssetManager assetManager;
@@ -39,9 +41,11 @@ void display(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   cameraControlSystem->Update(deltaMouseX, deltaMouseY);
-  renderSystem->Update();
-  lightingSystem->Update();
+  physicsSystem->Update();
   collisionSystem->Update();
+  renderSystem->Update();
+
+  lightingSystem->Update();
 
   printError("display");
   glutSwapBuffers();
@@ -63,9 +67,9 @@ void createLightEntities() {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
     vec3 color = vec3(1.0, 1.0, 1.0);
-    vec3 pos = vec3(randomX, 25, randomY);
+    mat4 trans = T(randomX, 25, randomY);
     auto lightEntity = gCoordinator.CreateEntity();
-    gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
+    gCoordinator.AddComponent(lightEntity, Transform{.translation = trans});
     gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN});
   }
 }
@@ -86,14 +90,25 @@ int main(int argc, char** argv) {
   gCoordinator.RegisterComponent<Camera>();
   gCoordinator.RegisterComponent<Light>();
   gCoordinator.RegisterComponent<AABB>();
+  gCoordinator.RegisterComponent<RigidBody>();
 
   cameraControlSystem = gCoordinator.RegisterSystem<CameraControlSystem>();
   {
     Signature signature;
     signature.set(gCoordinator.GetComponentType<Camera>());
     signature.set(gCoordinator.GetComponentType<Transform>());
+    signature.set(gCoordinator.GetComponentType<RigidBody>());
     gCoordinator.SetSystemSignature<CameraControlSystem>(signature);
   }
+
+  physicsSystem = gCoordinator.RegisterSystem<PhysicsSystem>();
+  {
+    Signature signature;
+    signature.set(gCoordinator.GetComponentType<Transform>());
+    signature.set(gCoordinator.GetComponentType<RigidBody>());
+    gCoordinator.SetSystemSignature<PhysicsSystem>(signature);
+  }
+  physicsSystem->Init();
 
   renderSystem = gCoordinator.RegisterSystem<RenderSystem>();
   {
@@ -102,7 +117,6 @@ int main(int argc, char** argv) {
     signature.set(gCoordinator.GetComponentType<Transform>());
     gCoordinator.SetSystemSignature<RenderSystem>(signature);
   }
-
   renderSystem->Init();
 
   lightingSystem = gCoordinator.RegisterSystem<LightingSystem>();
@@ -132,6 +146,8 @@ int main(int argc, char** argv) {
 
   auto groundSphere = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(groundSphere, Transform{.translation = T(-10, 0, 0), .rotation = Ry(0)});
+  gCoordinator.AddComponent(groundSphere,
+                            RigidBody{.velocity = vec3(0.1f, 0.0f, 0.0f), .acceleration = vec3(0.0f, 0.0f, 0.0f)});
   auto groundSphereModel = assetManager.getModel(ModelType::SPHERE);
   gCoordinator.AddComponent(groundSphere, Renderable{.model = groundSphereModel, .shader = TERRAIN, .texture = GRASS});
 
