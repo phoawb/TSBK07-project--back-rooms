@@ -342,6 +342,7 @@ GLfloat Norm(vec3 a);
 vec3 normalize(vec3 a);
 vec3 CalcNormalVector(vec3 a, vec3 b, vec3 c);
 void SplitVector(vec3 v, vec3 n, vec3 *vn, vec3 *vp);
+vec3 trans2pos(mat4 m);
 
 // Matrix operations primarily on 4x4 matrixes!
 // Row-wise by default but can be configured to column-wise (see SetTransposed)
@@ -724,6 +725,8 @@ vec3 CalcNormalVector(vec3 a, vec3 b, vec3 c) {
 
   return n;
 }
+
+vec3 trans2pos(mat4 m) { return SetVector(m.m[3], m.m[7], m.m[11]); }
 
 // Splits v into vn (parallell to n) and vp (perpendicular). Does not demand n to be normalized.
 void SplitVector(vec3 v, vec3 n, vec3 *vn, vec3 *vp) {

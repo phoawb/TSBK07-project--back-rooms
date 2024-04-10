@@ -6,6 +6,7 @@
 #include "AssetManager.hpp"
 #include "components/AABB.hpp"
 #include "components/Renderable.hpp"
+#include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 
@@ -13,7 +14,7 @@ extern Coordinator gCoordinator;
 
 const int MAP_SIZE = 100;
 const int TILE_SIZE = 10;
-const int WALL_THICKNESS = 2;
+const int WALL_THICKNESS = 4;
 const int WALL_TALLNESS = 25;
 const int GRID_SIZE = MAP_SIZE * 2 / TILE_SIZE;
 int START_ROOM_WIDTH = 80 / TILE_SIZE;
@@ -161,8 +162,8 @@ void placeWallEnteties(BoxProps& props) {
                                                                       props.Dimensions[i].z, props.TextureScale[i]),
                                                  .shader = TERRAIN,
                                                  .texture = props.TextureTypes[i]});
-    gCoordinator.AddComponent(
-        entity, AABB{.minPoint = props.Positions[i], .maxPoint = props.Positions[i] + props.Dimensions[i]});
+    gCoordinator.AddComponent(entity, RigidBody{.velocity = vec3(0, 0, 0), .acceleration = vec3(0, 0, 0)});
+    gCoordinator.AddComponent(entity, AABB{.dimensions = props.Dimensions[i]});
   }
 }
 

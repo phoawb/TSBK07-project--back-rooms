@@ -21,6 +21,7 @@
 #include "vector"
 
 float GROUND_SIZE = 100;
+int WINDOW_SIZE = 600;
 
 GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
@@ -74,11 +75,21 @@ void createLightEntities() {
   }
 }
 
+void spawnBall(mat4 startTrans, vec3 velocity) {
+  auto groundSphere = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(groundSphere, Transform{.translation = startTrans, .rotation = Ry(0)});
+  gCoordinator.AddComponent(groundSphere,
+                            RigidBody{.velocity = velocity, .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
+  auto groundSphereModel = assetManager.getModel(ModelType::SPHERE);
+  gCoordinator.AddComponent(groundSphere, Renderable{.model = groundSphereModel, .shader = TERRAIN, .texture = GRASS});
+  gCoordinator.AddComponent(groundSphere, AABB{.dimensions = vec3(2, 2, 2)});
+}
+
 int main(int argc, char** argv) {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
   glutInitContextVersion(3, 2);
-  glutInitWindowSize(800, 800);
+  glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
   glutCreateWindow("TSBK07 - Project");
   glutDisplayFunc(display);
 
@@ -110,6 +121,16 @@ int main(int argc, char** argv) {
   }
   physicsSystem->Init();
 
+  collisionSystem = gCoordinator.RegisterSystem<CollisionSystem>();
+  {
+    Signature signature;
+    signature.set(gCoordinator.GetComponentType<Transform>());
+    signature.set(gCoordinator.GetComponentType<RigidBody>());
+    signature.set(gCoordinator.GetComponentType<AABB>());
+    gCoordinator.SetSystemSignature<CollisionSystem>(signature);
+  }
+  collisionSystem->Init();
+
   renderSystem = gCoordinator.RegisterSystem<RenderSystem>();
   {
     Signature signature;
@@ -129,27 +150,20 @@ int main(int argc, char** argv) {
   createLightEntities();
   lightingSystem->Init();
 
-  collisionSystem = gCoordinator.RegisterSystem<CollisionSystem>();
-  {
-    Signature signature;
-    signature.set(gCoordinator.GetComponentType<AABB>());
-    gCoordinator.SetSystemSignature<CollisionSystem>(signature);
-  }
-  collisionSystem->Init();
-
   genMap();
+
+  // fly up
+  spawnBall(T(-85, 5, 60), vec3(0.f, 0.2f, 0.0f));
+  spawnBall(T(-75, 5, 60), vec3(0.f, 0.2f, 0.0f));
+
+  // fly into each other
+  spawnBall(T(-85, 5, 50), vec3(0.2f, 0.0f, 0.f));
+  spawnBall(T(-75, 5, 50), vec3(-0.2f, 0.0f, 0.f));
 
   auto ground = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(ground, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
   gCoordinator.AddComponent(
       ground, Renderable{.model = getGroundModel(GROUND_SIZE), .shader = TERRAIN, .texture = OFFICE_FLOOR});
-
-  auto groundSphere = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(groundSphere, Transform{.translation = T(-10, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(groundSphere,
-                            RigidBody{.velocity = vec3(0.1f, 0.0f, 0.0f), .acceleration = vec3(0.0f, 0.0f, 0.0f)});
-  auto groundSphereModel = assetManager.getModel(ModelType::SPHERE);
-  gCoordinator.AddComponent(groundSphere, Renderable{.model = groundSphereModel, .shader = TERRAIN, .texture = GRASS});
 
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);
