@@ -3,6 +3,7 @@
 #include "AssetManager.hpp"
 #include "GL_utilities.h"
 #include "MicroGlut.h"
+#include "boxes.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
 #include "components/Light.hpp"
@@ -69,13 +70,16 @@ void createLightEntities() {
     auto lightEntity = gCoordinator.CreateEntity();
     gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
     gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN});
-  }
 
-  auto groundSphere2 = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(groundSphere2, Transform{.translation = T(-20, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(
-      groundSphere2,
-      Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = NO_SHADE, .texture = GRASS});
+    float lampHeight = 0.1;
+    float lampDim = 5.0;
+    auto lamp = gCoordinator.CreateEntity();
+    gCoordinator.AddComponent(
+        lamp, Transform{.translation = T(pos.x - lampDim / 2.0, pos.y - lampHeight, pos.z - lampDim / 2.0),
+                        .rotation = Ry(0)});
+    gCoordinator.AddComponent(
+        lamp, Renderable{.model = getBoxModel(lampDim, lampHeight, 5.0, lampDim), .shader = LAMP, .texture = WHITE});
+  }
 }
 
 int main(int argc, char** argv) {
