@@ -1,6 +1,6 @@
-#include "ShaderManager.hpp"
+#include "AssetManager.hpp"
 
-void ShaderManager::Init() {
+void AssetManager::Init() {
   shader2id[NO_SHADE] = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
   shader2id[TERRAIN] = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
 
@@ -23,8 +23,13 @@ void ShaderManager::Init() {
   glActiveTexture(GL_TEXTURE4);
   LoadTGATextureSimple("textures/drop_ceiling.tga", &officeCeiling);
   tex2id[OFFICE_CEILING] = 4;
+
+  modelType2Model[SKYBOX] = LoadModelPlus("objects/skybox.obj");
+  modelType2Model[SPHERE] = LoadModelPlus("objects/groundsphere.obj");
 }
 
-GLuint ShaderManager::getShaderId(ShaderType shader) { return shader2id[shader]; }
+GLuint AssetManager::getShaderId(ShaderType shader) { return shader2id[shader]; }
 
-int ShaderManager::getTexId(TextureType tex) { return tex2id[tex]; }
+int AssetManager::getTexId(TextureType tex) { return tex2id[tex]; }
+
+Model* AssetManager::getModel(ModelType model) { return modelType2Model[model]; }

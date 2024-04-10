@@ -3,7 +3,7 @@
 #include <boxes.h>
 #include <stdio.h>
 
-#include "ShaderManager.hpp"
+#include "AssetManager.hpp"
 #include "components/AABB.hpp"
 #include "components/Renderable.hpp"
 #include "components/Transform.hpp"

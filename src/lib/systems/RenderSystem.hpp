@@ -17,7 +17,4 @@ class RenderSystem : public System {
   Entity mCamera;
   mat4 cameraMatrix;
   mat4 projectionMatrix;
-  Model *skyboxModel;
-  GLuint noShadeProgram;
-  vec3 groundBallPos = vec3(0, 0, 0);
 };
