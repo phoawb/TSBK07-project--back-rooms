@@ -20,7 +20,7 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     auto& camera = gCoordinator.GetComponent<Camera>(entity);
     auto& rigidBody = gCoordinator.GetComponent<RigidBody>(entity);
 
-    vec3 cameraPosition = vec3(transform.translation.m[3], transform.translation.m[7], transform.translation.m[11]);
+    vec3 cameraPosition = trans2pos(transform.translation);
 
     // Calculate camera target based on orientation
     camera.lookAt.x = cameraPosition.x + cos(camera.phi) * cos(camera.theta);
@@ -43,10 +43,10 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     }
 
     // Update camera position based on WASD keys
-    vec3 forward = normalize(camera.lookAt - cameraPosition);  // Direction camera is facing
-    forward.y = 0;                                                 // Remove y-component
-    forward = normalize(forward);                                  // Normalize since we altered the length
-    vec3 rightDir = normalize(cross(forward, camera.cameraUp));    // Right direction relative to camera's forward
+    vec3 forward = normalize(camera.lookAt - cameraPosition);    // Direction camera is facing
+    forward.y = 0;                                               // Remove y-component
+    forward = normalize(forward);                                // Normalize since we altered the length
+    vec3 rightDir = normalize(cross(forward, camera.cameraUp));  // Right direction relative to camera's forward
 
     rigidBody.velocity = vec3(0, 0, 0);
 

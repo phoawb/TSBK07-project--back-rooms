@@ -18,7 +18,7 @@ void LightingSystem::Init() {
     auto& light = gCoordinator.GetComponent<Light>(entity);
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
     lightSourcesColors[i] = light.color;
-    vec3 lightSourcePos = vec3(transform.translation.m[3], transform.translation.m[7], transform.translation.m[11]);
+    vec3 lightSourcePos = trans2pos(transform.translation);
     lightSourcesDirPos[i] = lightSourcePos;
     isDirectional[i] = light.isDirectional;
     i++;
