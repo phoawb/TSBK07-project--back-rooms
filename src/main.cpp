@@ -3,7 +3,6 @@
 #include "AssetManager.hpp"
 #include "GL_utilities.h"
 #include "MicroGlut.h"
-#include "boxes.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
 #include "components/Light.hpp"
@@ -63,22 +62,11 @@ void createLightEntities() {
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
-    /* int randomX = 0;
-    int randomY = 0; */
     vec3 color = vec3(1.0, 1.0, 1.0);
     vec3 pos = vec3(randomX, 25, randomY);
     auto lightEntity = gCoordinator.CreateEntity();
     gCoordinator.AddComponent(lightEntity, Transform{.position = pos});
     gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN});
-
-    float lampHeight = 0.1;
-    float lampDim = 5.0;
-    auto lamp = gCoordinator.CreateEntity();
-    gCoordinator.AddComponent(
-        lamp, Transform{.translation = T(pos.x - lampDim / 2.0, pos.y - lampHeight, pos.z - lampDim / 2.0),
-                        .rotation = Ry(0)});
-    gCoordinator.AddComponent(
-        lamp, Renderable{.model = getBoxModel(lampDim, lampHeight, 5.0, lampDim), .shader = LAMP, .texture = WHITE});
   }
 }
 
