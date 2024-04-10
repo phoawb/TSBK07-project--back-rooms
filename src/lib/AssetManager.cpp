@@ -25,6 +25,10 @@ void AssetManager::Init() {
   LoadTGATextureSimple("textures/drop_ceiling.tga", &officeCeiling);
   tex2id[OFFICE_CEILING] = 4;
 
+  glActiveTexture(GL_TEXTURE5);
+  LoadTGATextureSimple("textures/white.tga", &white);
+  tex2id[WHITE] = 5;
+
   modelType2Model[SKYBOX] = LoadModelPlus("objects/skybox.obj");
   modelType2Model[SPHERE] = LoadModelPlus("objects/groundsphere.obj");
 }
