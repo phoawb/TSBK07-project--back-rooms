@@ -3,6 +3,7 @@
 void AssetManager::Init() {
   shader2id[NO_SHADE] = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
   shader2id[TERRAIN] = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
+  shader2id[LAMP] = loadShaders("shaders/lamp.vert", "shaders/lamp.frag");
 
   glActiveTexture(GL_TEXTURE0);
   LoadTGATextureSimple("textures/floor.tga", &officeFloor);
@@ -23,6 +24,10 @@ void AssetManager::Init() {
   glActiveTexture(GL_TEXTURE4);
   LoadTGATextureSimple("textures/drop_ceiling.tga", &officeCeiling);
   tex2id[OFFICE_CEILING] = 4;
+
+  glActiveTexture(GL_TEXTURE5);
+  LoadTGATextureSimple("textures/white.tga", &white);
+  tex2id[WHITE] = 5;
 
   modelType2Model[SKYBOX] = LoadModelPlus("objects/skybox.obj");
   modelType2Model[SPHERE] = LoadModelPlus("objects/groundsphere.obj");
