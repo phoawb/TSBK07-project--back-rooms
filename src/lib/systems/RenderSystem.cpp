@@ -1,12 +1,13 @@
 #include "RenderSystem.hpp"
 
+#include "AssetManager.hpp"
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
-#include "AssetManager.hpp"
 #include "boxes.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
 #include "components/Renderable.hpp"
+#include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
@@ -71,10 +72,11 @@ void RenderSystem::Init() {
   // Camera Attributes
   float cameraSide = 1;
   vec3 cameraStartPos = vec3(-85.0f, 10.0f, 80.0f);
+  mat4 cameraStartTranslation = T(-85.0f, 10.0f, 80.0f);
   vec3 cameraDimensions = vec3(cameraSide, cameraSide, cameraSide);
 
   // Add component to entity
-  gCoordinator.AddComponent(mCamera, Transform{.position = cameraStartPos});
+  gCoordinator.AddComponent(mCamera, Transform{.translation = cameraStartTranslation});
   gCoordinator.AddComponent(mCamera, Camera{.projectionTransform = projectionMatrix,
                                             .theta = -M_PI_2,
                                             .phi = 0,
@@ -83,7 +85,8 @@ void RenderSystem::Init() {
                                             .dimensions = cameraDimensions});
   gCoordinator.AddComponent(mCamera, AABB{.minPoint = cameraStartPos - cameraDimensions / 2,
                                           .maxPoint = cameraStartPos + cameraDimensions / 2});
-
+  gCoordinator.AddComponent(mCamera,
+                            RigidBody{.velocity = vec3(0.0f, 0.0f, 0.0f), .acceleration = vec3(0.0f, 0.0f, 0.0f)});
 
   printError("init RenderSystem");
 }
@@ -107,10 +110,11 @@ void RenderSystem::Update() {
     glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
     DrawModel(model, shaderId, "inPosition", "inNormal", "inTexCoord");
   }
-  auto &cameraPos = gCoordinator.GetComponent<Transform>(mCamera);
+  auto &cameraTransform = gCoordinator.GetComponent<Transform>(mCamera);
   auto &camera = gCoordinator.GetComponent<Camera>(mCamera);
   // upload camera position for phong reasons
-  uploadUniformVec3ToShader(assetManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos.position);
+  vec3 cameraPos =
+      vec3(cameraTransform.translation.m[3], cameraTransform.translation.m[7], cameraTransform.translation.m[11]);
+  uploadUniformVec3ToShader(assetManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos);
   cameraMatrix = camera.matrix;
-
 }

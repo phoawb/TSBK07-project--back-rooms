@@ -18,7 +18,8 @@ void LightingSystem::Init() {
     auto& light = gCoordinator.GetComponent<Light>(entity);
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
     lightSourcesColors[i] = light.color;
-    lightSourcesDirPos[i] = transform.position;
+    vec3 lightSourcePos = vec3(transform.translation.m[3], transform.translation.m[7], transform.translation.m[11]);
+    lightSourcesDirPos[i] = lightSourcePos;
     isDirectional[i] = light.isDirectional;
     i++;
   }
@@ -43,7 +44,8 @@ void LightingSystem::Update() {
     auto& light = gCoordinator.GetComponent<Light>(entity);
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
     lightSourcesColors[i] = random < 0.99 ? light.color : vec3(0, 0, 0);
-    lightSourcesDirPos[i] = transform.position;
+    vec3 lightSourcePos = vec3(transform.translation.m[3], transform.translation.m[7], transform.translation.m[11]);
+    lightSourcesDirPos[i] = lightSourcePos;
     isDirectional[i] = light.isDirectional;
     i++;
   }
