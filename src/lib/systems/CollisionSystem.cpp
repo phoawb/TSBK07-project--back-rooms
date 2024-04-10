@@ -6,7 +6,6 @@
 #include "core/Coordinator.hpp"
 
 extern Coordinator gCoordinator;
-int CAMERA_ENTITY_ID = 0;  // trust me lol
 
 void CollisionSystem::Init() { printf("CollisionSystem Init\n"); };
 
