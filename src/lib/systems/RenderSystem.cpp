@@ -2,7 +2,7 @@
 
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
-#include "ShaderManager.hpp"
+#include "AssetManager.hpp"
 #include "boxes.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
@@ -13,10 +13,17 @@
 #include "ground.h"
 
 extern Coordinator gCoordinator;
-extern ShaderManager shaderManager;
+extern AssetManager assetManager;
 
 void RenderSystem::drawSkybox() {
-  glUseProgram(noShadeProgram);
+  auto skyboxModel = assetManager.getModel(ModelType::SKYBOX);
+  auto shaderId = assetManager.getShaderId(ShaderType::NO_SHADE);
+  auto texUnit = assetManager.getTexId(SKYBOX_SKY);
+
+  glUseProgram(shaderId);
+
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+
   // disable depth test and culling
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
@@ -29,17 +36,17 @@ void RenderSystem::drawSkybox() {
   skyBoxTransform.m[7] = 0;
   skyBoxTransform.m[11] = 0;
 
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "cameraMatrix"), 1, GL_TRUE, skyBoxTransform.m);
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "cameraMatrix"), 1, GL_TRUE, skyBoxTransform.m);
 
   mat4 trans = T(0.0f, -0.3f, 0.0f);
   mat4 rot = Ry(0);
   mat4 total = rot * trans;
   mat4 scale = S(20.0f, 20.0f, 20.0f);
   total = total * scale;
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "mdlMatrix"), 1, GL_TRUE, total.m);
-  int texUnit = shaderManager.getTexId(SKYBOX_SKY);
-  glUniform1i(glGetUniformLocation(noShadeProgram, "texUnit"), texUnit);
-  DrawModel(skyboxModel, noShadeProgram, "inPosition", NULL, "inTexCoord");
+
+  glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
+  glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
+  DrawModel(skyboxModel, shaderId, "inPosition", NULL, "inTexCoord");
 
   // enable depth test and culling
   glEnable(GL_DEPTH_TEST);
@@ -77,13 +84,6 @@ void RenderSystem::Init() {
   gCoordinator.AddComponent(mCamera, AABB{.minPoint = cameraStartPos - cameraDimensions / 2,
                                           .maxPoint = cameraStartPos + cameraDimensions / 2});
 
-  // TODO: use shaderManager
-  noShadeProgram = loadShaders("shaders/noShade.vert", "shaders/noShade.frag");
-
-  printError("init shader");
-  glUseProgram(noShadeProgram);
-  glUniformMatrix4fv(glGetUniformLocation(noShadeProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-  skyboxModel = LoadModelPlus("objects/skybox.obj");
 
   printError("init RenderSystem");
 }
@@ -98,8 +98,8 @@ void RenderSystem::Update() {
     TextureType texture = gCoordinator.GetComponent<Renderable>(entity).texture;
     mat4 m2w = trans * rot;
     mat4 total = cameraMatrix * m2w;
-    auto shaderId = shaderManager.getShaderId(shader);
-    int texUnit = shaderManager.getTexId(texture);
+    auto shaderId = assetManager.getShaderId(shader);
+    int texUnit = assetManager.getTexId(texture);
     glUseProgram(shaderId);
     glUniformMatrix4fv(glGetUniformLocation(shaderId, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
     glUniformMatrix4fv(glGetUniformLocation(shaderId, "mdlMatrix"), 1, GL_TRUE, total.m);
@@ -110,7 +110,7 @@ void RenderSystem::Update() {
   auto &cameraPos = gCoordinator.GetComponent<Transform>(mCamera);
   auto &camera = gCoordinator.GetComponent<Camera>(mCamera);
   // upload camera position for phong reasons
-  uploadUniformVec3ToShader(shaderManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos.position);
+  uploadUniformVec3ToShader(assetManager.getShaderId(ShaderType::TERRAIN), "cameraPos", cameraPos.position);
   cameraMatrix = camera.matrix;
 
 }

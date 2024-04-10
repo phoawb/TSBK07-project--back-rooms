@@ -1,12 +1,12 @@
 #include "LightingSystem.hpp"
 
-#include "ShaderManager.hpp"
+#include "AssetManager.hpp"
 #include "components/Light.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 
 extern Coordinator gCoordinator;
-extern ShaderManager shaderManager;
+extern AssetManager assetManager;
 
 void LightingSystem::Init() {
   int lightCount = mEntities.size();
@@ -22,7 +22,7 @@ void LightingSystem::Init() {
     isDirectional[i] = light.isDirectional;
     i++;
   }
-  auto shaderId = shaderManager.getShaderId(TERRAIN);
+  auto shaderId = assetManager.getShaderId(TERRAIN);
   glUseProgram(shaderId);
   glUniform1i(glGetUniformLocation(shaderId, "lightCount"), lightCount);
   glUniform3fv(glGetUniformLocation(shaderId, "lightSourcesColors"), lightCount, &lightSourcesColors[0].x);
@@ -47,7 +47,7 @@ void LightingSystem::Update() {
     isDirectional[i] = light.isDirectional;
     i++;
   }
-  auto shaderId = shaderManager.getShaderId(TERRAIN);
+  auto shaderId = assetManager.getShaderId(TERRAIN);
   glUseProgram(shaderId);
   glUniform1i(glGetUniformLocation(shaderId, "lightCount"), lightCount);
   glUniform3fv(glGetUniformLocation(shaderId, "lightSourcesColors"), lightCount, &lightSourcesColors[0].x);

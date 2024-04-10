@@ -5,9 +5,9 @@ LIBDIR = lib/
 
 CC = gcc
 CXX = g++
-CFLAGS = -Wall -DGL_GLEXT_PROTOTYPES
+CFLAGS = -Wall -DGL_GLEXT_PROTOTYPES -Wno-deprecated-declarations
 CXXFLAGS = $(CFLAGS) -std=c++17
-LDFLAGS = -lm -framework OpenGL -framework Cocoa -framework CoreGraphics
+LDFLAGS = -lm -framework OpenGL -framework Cocoa -framework CoreGraphics -Wno-deprecated-declarations
 
 C_SOURCES = \
 $(COMMONDIR)GL_utilities.c \
@@ -17,6 +17,7 @@ $(COMMONDIR)/MicroGlut.m \
 CPP_SOURCES = \
 $(LIBDIR)/boxes.cpp \
 $(LIBDIR)/ground.cpp \
+$(LIBDIR)/AssetManager.cpp \
 $(LIBDIR)/systems/RenderSystem.cpp \
 $(LIBDIR)/systems/LightingSystem.cpp \
 $(LIBDIR)/systems/CameraControlSystem.cpp \

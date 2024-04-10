@@ -1,8 +1,8 @@
 #define MAIN
 
+#include "AssetManager.hpp"
 #include "GL_utilities.h"
 #include "MicroGlut.h"
-#include "ShaderManager.hpp"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
 #include "components/Light.hpp"
@@ -28,7 +28,7 @@ std::__1::shared_ptr<LightingSystem> lightingSystem;
 std::__1::shared_ptr<CollisionSystem> collisionSystem;
 
 Coordinator gCoordinator;
-ShaderManager shaderManager;
+AssetManager assetManager;
 
 int deltaMouseX = 0;
 int deltaMouseY = 0;
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
   glutDisplayFunc(display);
 
   gCoordinator.Init();
-  shaderManager.Init();
+  assetManager.Init();
 
   gCoordinator.RegisterComponent<Renderable>();
   gCoordinator.RegisterComponent<Transform>();
@@ -140,9 +140,8 @@ int main(int argc, char** argv) {
 
   auto groundSphere = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(groundSphere, Transform{.translation = T(-10, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(
-      groundSphere,
-      Renderable{.model = LoadModelPlus("objects/groundsphere.obj"), .shader = TERRAIN, .texture = GRASS});
+  auto groundSphereModel = assetManager.getModel(ModelType::SPHERE);
+  gCoordinator.AddComponent(groundSphere, Renderable{.model = groundSphereModel, .shader = TERRAIN, .texture = GRASS});
 
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);
