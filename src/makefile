@@ -16,7 +16,6 @@ $(COMMONDIR)/MicroGlut.m \
 
 CPP_SOURCES = \
 $(LIBDIR)/boxes.cpp \
-$(LIBDIR)/ground.cpp \
 $(LIBDIR)/AssetManager.cpp \
 $(LIBDIR)/systems/RenderSystem.cpp \
 $(LIBDIR)/systems/LightingSystem.cpp \

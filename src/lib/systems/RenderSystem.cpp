@@ -11,7 +11,6 @@
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
-#include "ground.h"
 
 extern Coordinator gCoordinator;
 extern AssetManager assetManager;
@@ -71,7 +70,7 @@ void RenderSystem::Init() {
 
   // Camera Attributes
   float cameraSide = 3;
-  float cameraHeight = 10;
+  float cameraHeight = 9;
   vec3 cameraStartPos = vec3(-85.0f, 10.0f, 80.0f);
   mat4 cameraStartTranslation = T(-85.0f, 10.0f, 80.0f);
   vec3 cameraDimensions = vec3(cameraSide, cameraHeight, cameraSide);
@@ -98,9 +97,10 @@ void RenderSystem::Update() {
     Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
     mat4 rot = gCoordinator.GetComponent<Transform>(entity).rotation;
+    mat4 scale = gCoordinator.GetComponent<Transform>(entity).scale;
     ShaderType shader = gCoordinator.GetComponent<Renderable>(entity).shader;
     TextureType texture = gCoordinator.GetComponent<Renderable>(entity).texture;
-    mat4 m2w = trans * rot;
+    mat4 m2w = trans * rot * scale;
     mat4 total = cameraMatrix * m2w;
     auto shaderId = assetManager.getShaderId(shader);
     int texUnit = assetManager.getTexId(texture);

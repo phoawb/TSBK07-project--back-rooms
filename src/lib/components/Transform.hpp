@@ -3,7 +3,7 @@
 #include "VectorUtils4.h"
 
 struct Transform {
-  mat4 translation;
-  mat4 rotation;
-  vec3 scale;
+  mat4 translation = IdentityMatrix();
+  mat4 rotation = IdentityMatrix();
+  mat4 scale = IdentityMatrix();
 };

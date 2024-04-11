@@ -75,12 +75,34 @@ void createLightEntities() {
 
 void spawnBall(mat4 startTrans, vec3 velocity) {
   auto groundSphere = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(groundSphere, Transform{.translation = startTrans, .rotation = Ry(0)});
+  gCoordinator.AddComponent(groundSphere, Transform{.translation = startTrans, .scale = S(1, 1, 1), .rotation = Ry(0)});
   gCoordinator.AddComponent(groundSphere,
                             RigidBody{.velocity = velocity, .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
   auto groundSphereModel = assetManager.getModel(ModelType::SPHERE);
   gCoordinator.AddComponent(groundSphere, Renderable{.model = groundSphereModel, .shader = TERRAIN, .texture = GRASS});
   gCoordinator.AddComponent(groundSphere, AABB{.dimensions = vec3(2, 2, 2)});
+}
+
+void spawnCarton(mat4 startTrans, vec3 velocity) {
+  auto carton = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(carton, Transform{.translation = startTrans, .scale = S(0.1, 0.1, 0.1), .rotation = Ry(0)});
+  gCoordinator.AddComponent(carton,
+                            RigidBody{.velocity = velocity, .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
+  auto cartonModel = assetManager.getModel(ModelType::CARTON);
+  gCoordinator.AddComponent(carton, Renderable{.model = cartonModel, .shader = TERRAIN, .texture = CARTON_TEX});
+  gCoordinator.AddComponent(carton, AABB{.dimensions = vec3(2, 2, 2)});
+}
+
+void spawnChair(mat4 startTrans, vec3 velocity) {
+  auto chair = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(
+      chair, Transform{.translation = startTrans, .scale = S(20.0f, 20.0f, 20.0f), .rotation = Rz(2 * M_2_PI)});
+  gCoordinator.AddComponent(chair,
+                            RigidBody{.velocity = velocity, .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
+  auto chairModel = assetManager.getModel(ModelType::CHAIR);
+  gCoordinator.AddComponent(
+      chair, Renderable{.model = chairModel, .shader = TERRAIN, .texture = TextureType::WHITE, .modelScale = 100.0});
+  gCoordinator.AddComponent(chair, AABB{.dimensions = vec3(1, 1, 1), .isCentered = true});
 }
 
 int main(int argc, char** argv) {
@@ -152,7 +174,8 @@ int main(int argc, char** argv) {
 
   spawnBall(T(-95, 10, 50), vec3(0.f, 0.3f, 0.0f));
   spawnBall(T(-85, 10, 50), vec3(0.f, 0.5f, 0.0f));
-  spawnBall(T(-75, 10, 50), vec3(0.f, 0.7f, 0.0f));
+  spawnChair(T(-75, 10, 50), vec3(0.f, 0.5f, 0.0f));
+  spawnCarton(T(-75, 10, 40), vec3(0.f, 0.5f, 0.0f));
 
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);

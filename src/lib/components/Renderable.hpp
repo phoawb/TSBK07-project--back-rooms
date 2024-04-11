@@ -5,6 +5,7 @@
 
 struct Renderable {
   Model* model;
+  float modelScale = 1.0f;
   ShaderType shader;
   TextureType texture;
 };
