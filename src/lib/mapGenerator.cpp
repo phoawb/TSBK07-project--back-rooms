@@ -162,6 +162,28 @@ class BinarySpacePartitioner {
   }
 };
 
+vec2 generateBottomLeftCornerBetween(vec2 boundaryLeftPoint, vec2 boundaryRightPoint, float pointModifier, int offset) {
+  int minX = boundaryLeftPoint.x + offset;
+  int maxX = boundaryRightPoint.x - offset;
+  int minY = boundaryLeftPoint.y + offset;
+  int maxY = boundaryRightPoint.y - offset;
+
+  int xModifier = (maxX - minX) * pointModifier;
+  int yModifier = (maxY - minY) * pointModifier;
+  return vec2(randRange(minX, minX + xModifier), randRange(minY, minY + yModifier));
+};
+
+vec2 generateTopRightCornerBetween(vec2 boundaryLeftPoint, vec2 boundaryRightPoint, float pointModifier, int offset) {
+  int minX = boundaryLeftPoint.x + offset;
+  int maxX = boundaryRightPoint.x - offset;
+  int minY = boundaryLeftPoint.y + offset;
+  int maxY = boundaryRightPoint.y - offset;
+
+  int xModifier = (maxX - minX) * pointModifier;
+  int yModifier = (maxY - minY) * pointModifier;
+  return vec2(randRange(minX + xModifier, maxX), randRange(minY + yModifier, maxY));
+};
+
 std::vector<NodePtr> findLeafNodes(const NodePtr& rootNode) {
   std::vector<NodePtr> leafNodes;
   if (!rootNode) return leafNodes;  // Return empty if the root is nullptr
@@ -187,6 +209,21 @@ std::vector<NodePtr> findLeafNodes(const NodePtr& rootNode) {
   return leafNodes;
 }
 
+class RoomGenerator {
+ public:
+  RoomGenerator(int maxIterations, int minRoomWidth, int minRoomHeight)
+      : maxIterations(maxIterations), minRoomWidth(minRoomWidth), minRoomHeight(minRoomHeight) {}
+
+  std::vector<NodePtr> generateRooms(std::vector<NodePtr> roomSpaces) {
+    std::vector<NodePtr> rooms;
+    for (auto& roomSpace : roomSpaces) {
+    }
+  };
+
+ private:
+  int maxIterations, minRoomWidth, minRoomHeight;
+};
+
 class MapCreator {
  public:
   std::vector<NodePtr> allNodesCollection;
@@ -198,6 +235,8 @@ class MapCreator {
     BinarySpacePartitioner bsp(mapWidth, mapHeight);
     allNodesCollection = bsp.prepareNodesCollection(maxIterations, minRoomWidth, minRoomHeight);
     std::vector<NodePtr> roomSpaces = findLeafNodes(bsp.rootNode);
+    RoomGenerator roomGenerator = RoomGenerator(maxIterations, minRoomWidth, minRoomHeight);
+    std::vector<NodePtr> rooms = roomGenerator.generateRooms(roomSpaces);
     return allNodesCollection;
   };
 };
