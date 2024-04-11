@@ -100,8 +100,7 @@ void spawnChair(mat4 startTrans, vec3 velocity) {
   gCoordinator.AddComponent(chair,
                             RigidBody{.velocity = velocity, .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
   auto chairModel = assetManager.getModel(ModelType::CHAIR);
-  gCoordinator.AddComponent(
-      chair, Renderable{.model = chairModel, .shader = TERRAIN, .texture = TextureType::WHITE, .modelScale = 100.0});
+  gCoordinator.AddComponent(chair, Renderable{.model = chairModel, .shader = TERRAIN, .texture = TextureType::WHITE});
   gCoordinator.AddComponent(chair, AABB{.dimensions = vec3(1, 1, 1), .isCentered = true});
 }
 
