@@ -71,14 +71,14 @@ void RenderSystem::Init() {
 
   // Camera Attributes
   float cameraSide = 1;
-  vec3 cameraStartPos = vec3(-85.0f, 10.0f, 80.0f);
-  mat4 cameraStartTranslation = T(-85.0f, 10.0f, 80.0f);
+  // vec3 cameraStartPos = vec3(-85.0f, 50.0f, 80.0f);
+  mat4 cameraStartTranslation = T(-85.0f, 200.0f, 500.0f);
   vec3 cameraDimensions = vec3(cameraSide, cameraSide, cameraSide);
 
   // Add component to entity
   gCoordinator.AddComponent(mCamera, Transform{.translation = cameraStartTranslation});
   gCoordinator.AddComponent(mCamera, Camera{.projectionTransform = projectionMatrix,
-                                            .theta = -M_PI_2,
+                                            .theta = 0,
                                             .phi = 0,
                                             .lookAt = vec3(0.0f, 50.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f),
