@@ -13,6 +13,7 @@
 #include "core/Enums.hpp"
 #include "genMap.h"
 #include "ground.h"
+#include "mapCreator.h"
 #include "systems/CameraControlSystem.hpp"
 #include "systems/CollisionSystem.hpp"
 #include "systems/LightingSystem.hpp"
@@ -150,7 +151,9 @@ int main(int argc, char** argv) {
   createLightEntities();
   lightingSystem->Init();
 
-  genMap();
+  // genMap();
+  MapCreator mapCreator(500, 500, 30, 60, 60);
+  mapCreator.start();
 
   // fly up
   spawnBall(T(-85, 5, 60), vec3(0.f, 0.2f, 0.0f));
@@ -160,10 +163,10 @@ int main(int argc, char** argv) {
   spawnBall(T(-85, 5, 50), vec3(0.2f, 0.0f, 0.f));
   spawnBall(T(-75, 5, 50), vec3(-0.2f, 0.0f, 0.f));
 
-  auto ground = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(ground, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(
-      ground, Renderable{.model = getGroundModel(GROUND_SIZE), .shader = TERRAIN, .texture = OFFICE_FLOOR});
+  /*   auto ground = gCoordinator.CreateEntity();
+    gCoordinator.AddComponent(ground, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
+    gCoordinator.AddComponent(
+        ground, Renderable{.model = getGroundModel(GROUND_SIZE), .shader = TERRAIN, .texture = OFFICE_FLOOR}); */
 
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);
