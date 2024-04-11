@@ -22,7 +22,7 @@ void main(void) {
     vec3 finalColor = ambientColor; // Start with ambient color
 
     vec3 finalShade = vec3(0.0);
-    vec3 ambient = vec3(0.1);
+    vec3 ambient = vec3(0.2);
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
     float specularExponent = 8.0;

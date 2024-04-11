@@ -29,6 +29,10 @@ void AssetManager::Init() {
   LoadTGATextureSimple("textures/white.tga", &white);
   tex2id[WHITE] = 5;
 
+  glActiveTexture(GL_TEXTURE6);
+  LoadTGATextureSimple("textures/offwhite.tga", &offwhite);
+  tex2id[OFFWHITE] = 6;
+
   modelType2Model[SKYBOX] = LoadModelPlus("objects/skybox.obj");
   modelType2Model[SPHERE] = LoadModelPlus("objects/groundsphere.obj");
 }

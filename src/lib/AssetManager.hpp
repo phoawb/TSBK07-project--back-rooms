@@ -19,5 +19,5 @@ class AssetManager {
   std::map<ShaderType, GLuint> shader2id;
   std::map<TextureType, int> tex2id;
   std::map<ModelType, Model *> modelType2Model;
-  GLuint officeWall, grass, skyboxSky, officeFloor, officeCeiling, white;
+  GLuint officeWall, grass, skyboxSky, officeFloor, officeCeiling, white, offwhite;
 };
