@@ -213,13 +213,13 @@ class RoomGenerator {
  public:
   RoomGenerator(){};  // Default constructor
 
-  std::vector<NodePtr> generateRooms(std::vector<NodePtr> roomSpaces) {
+  std::vector<NodePtr> generateRooms(std::vector<NodePtr> roomSpaces, float pointModifier = 0.1) {
     std::vector<NodePtr> rooms;
     for (auto roomSpace : roomSpaces) {
       vec2 newBottomLeftCorner =
-          generateBottomLeftCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, 0.1, 1);
+          generateBottomLeftCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, pointModifier, 1);
       vec2 newTopRightCorner =
-          generateTopRightCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, 0.9, 1);
+          generateTopRightCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, 1 - pointModifier, 1);
       roomSpace->bottomLeftCorner = newBottomLeftCorner;
       roomSpace->topRightCorner = newTopRightCorner;
       roomSpace->bottomRightCorner = vec2(newTopRightCorner.x, newBottomLeftCorner.y);
@@ -230,12 +230,12 @@ class RoomGenerator {
   };
 };
 
-class MapCreator {
+class MapGenerator {
  public:
   std::vector<NodePtr> allNodesCollection;
   int mapWidth, mapHeight;
 
-  MapCreator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight){};
+  MapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight){};
 
   std::vector<NodePtr> calculateMap(int maxIterations, int minRoomWidth, int minRoomHeight) {
     BinarySpacePartitioner bsp(mapWidth, mapHeight);
@@ -248,8 +248,8 @@ class MapCreator {
 };
 
 int main() {
-  MapCreator mapCreator(100, 100);
-  std::vector<NodePtr> map = mapCreator.calculateMap(1, 25, 25);
+  MapGenerator mapGenerator(100, 100);
+  std::vector<NodePtr> map = mapGenerator.calculateMap(1, 25, 25);
   // printf(map.size() > 0 ? "Map created successfully with %lu rooms\n" : "Map creation failed\n", map.size());
 
   return 0;
