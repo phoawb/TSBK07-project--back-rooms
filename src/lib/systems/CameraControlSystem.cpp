@@ -11,7 +11,8 @@ extern Coordinator gCoordinator;
 bool mouseToggle = false;
 
 void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
-  const float moveSpeed = 0.6f;
+  const float moveSpeed_xz = 0.4f;
+  const float moveSpeed_y = 0.1f;
   const float rotationSpeed = 0.02f;
   const float mouseSensitivity = 0.003f;
 
@@ -48,17 +49,18 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     forward = normalize(forward);                                // Normalize since we altered the length
     vec3 rightDir = normalize(cross(forward, camera.cameraUp));  // Right direction relative to camera's forward
 
-    rigidBody.velocity = vec3(0, 0, 0);
+    rigidBody.velocity.x = 0;
+    rigidBody.velocity.z = 0;
 
     // Forward and backward
     if (glutKeyIsDown('w'))
-      rigidBody.velocity += forward * moveSpeed;
+      rigidBody.velocity += forward * moveSpeed_xz;
     else if (glutKeyIsDown('s'))
-      rigidBody.velocity -= forward * moveSpeed;
+      rigidBody.velocity -= forward * moveSpeed_xz;
 
     // Left and right
-    if (glutKeyIsDown('a')) rigidBody.velocity -= rightDir * moveSpeed;
-    if (glutKeyIsDown('d')) rigidBody.velocity += rightDir * moveSpeed;
+    if (glutKeyIsDown('a')) rigidBody.velocity -= rightDir * moveSpeed_xz;
+    if (glutKeyIsDown('d')) rigidBody.velocity += rightDir * moveSpeed_xz;
 
     if (glutKeyIsDown('m')) mouseToggle = !mouseToggle;
 
@@ -71,8 +73,8 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     if (glutKeyIsDown('i')) camera.phi += rotationSpeed;
     if (glutKeyIsDown('k')) camera.phi -= rotationSpeed;
 
-    if (glutKeyIsDown(GLUT_KEY_UP)) rigidBody.velocity.y += moveSpeed;
-    if (glutKeyIsDown(GLUT_KEY_DOWN)) rigidBody.velocity.y -= moveSpeed;
+    if (glutKeyIsDown(GLUT_KEY_UP) || glutKeyIsDown('q')) rigidBody.velocity.y += moveSpeed_y;
+    if (glutKeyIsDown(GLUT_KEY_DOWN) || glutKeyIsDown('e')) rigidBody.velocity.y -= moveSpeed_y;
 
     // mouse
     if (mouseToggle) {

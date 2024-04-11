@@ -83,7 +83,7 @@ void RenderSystem::Init() {
                                             .lookAt = vec3(0.0f, 50.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f),
                                             .dimensions = cameraDimensions});
-  gCoordinator.AddComponent(mCamera, AABB{.dimensions = cameraDimensions});
+  gCoordinator.AddComponent(mCamera, AABB{.dimensions = cameraDimensions, .centered = true});
   gCoordinator.AddComponent(
       mCamera,
       RigidBody{.velocity = vec3(0.0f, 0.0f, 0.0f), .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});

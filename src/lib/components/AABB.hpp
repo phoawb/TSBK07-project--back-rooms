@@ -4,4 +4,5 @@
 
 struct AABB {
   vec3 dimensions;
+  bool centered = false;
 };

@@ -39,16 +39,21 @@ void CollisionSystem::Update() {
         auto& secondTransform = gCoordinator.GetComponent<Transform>(secondEntity);
         auto const& secondAabb = gCoordinator.GetComponent<AABB>(secondEntity);
 
-        vec3 min1 = trans2pos(firstTransform.translation);
-        vec3 max1 = min1 + firstAabb.dimensions;
+        vec3 halfDims = firstAabb.dimensions / 2.0f;
+
+        vec3 min1 = firstAabb.centered ? trans2pos(firstTransform.translation) - halfDims
+                                       : trans2pos(firstTransform.translation);
+        vec3 max1 = firstAabb.centered ? min1 + halfDims : min1 + firstAabb.dimensions;
 
         vec3 min2 = trans2pos(secondTransform.translation);
         vec3 max2 = min2 + secondAabb.dimensions;
 
         if (collisionAABB(min1, max1, min2, max2)) {
-          firstTransform.translation.m[3] += -firstRigidBody.velocity.x;
-          firstTransform.translation.m[7] += -firstRigidBody.velocity.y;
-          firstTransform.translation.m[11] += -firstRigidBody.velocity.z;
+          firstTransform.translation.m[3] -= firstRigidBody.velocity.x;
+          firstTransform.translation.m[7] -= firstRigidBody.velocity.y;
+          firstTransform.translation.m[11] -= firstRigidBody.velocity.z;
+          firstRigidBody.velocity = vec3(0.0f, 0.0f, 0.0f);
+          firstRigidBody.acceleration = vec3(0.0f, 0.0f, 0.0f);
         }
       }
     }
