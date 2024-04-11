@@ -16,6 +16,8 @@ const int MAP_SIZE = 100;
 const int TILE_SIZE = 10;
 const int WALL_THICKNESS = 4;
 const int WALL_TALLNESS = 25;
+const float MOLDING_HEIGHT = 1.5;
+const float MOLDING_DEPTH = 0.2f;
 const int GRID_SIZE = MAP_SIZE * 2 / TILE_SIZE;
 int START_ROOM_WIDTH = 80 / TILE_SIZE;
 int START_ROOM_HEIGHT = 40 / TILE_SIZE;
@@ -135,6 +137,13 @@ void grid2BoxProps(std::vector<std::vector<Tile>> grid, BoxProps& props) {
         GLfloat tileSize = grid[x][y].isStartEndRoom ? 2 : TILE_SIZE;
         props.Dimensions.push_back({TILE_SIZE, WALL_TALLNESS, tileSize});
         props.TextureTypes.push_back(TextureType::OFFICE_WALL);
+        props.TextureScale.push_back(1);
+        // moldings
+        props.numBoxes++;
+        props.Positions.push_back({x_pos - MOLDING_DEPTH, 0.0, z_pos - MOLDING_DEPTH});
+        props.Rotations.push_back(grid[x][y].rotate ? M_PI_2 : 0);
+        props.Dimensions.push_back({TILE_SIZE + MOLDING_DEPTH * 2, MOLDING_HEIGHT, tileSize + MOLDING_DEPTH * 2});
+        props.TextureTypes.push_back(TextureType::OFFWHITE);
         props.TextureScale.push_back(1);
       }
     }
