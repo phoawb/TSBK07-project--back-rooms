@@ -1,9 +1,19 @@
-#include <random>
+#include "memory"
+#include "random"
 
-#include "VectorUtils4.h"
+// #include "VectorUtils4.h"
 #include "algorithm"
 #include "queue"
+#include "stdio.h"
 #include "vector"
+
+// vec2 is mostly used for texture cordinates, so I havn't bothered defining any operations for it
+typedef struct vec2 {
+  int x, y;
+  vec2() {}
+  vec2(int x2, int y2) : x(x2), y(y2) {}
+  bool operator==(const vec2& other) const { return x == other.x && y == other.y; }
+} vec2, *vec2_ptr;
 
 int randRange(int min, int max) {
   static std::random_device rd;                     // Obtain a random number from hardware
@@ -13,44 +23,30 @@ int randRange(int min, int max) {
   return distr(gen);
 }
 
-class Node {
- public:
-  std::vector<Node> children;
-  bool visited;
-  vec2 bottomLeftCorner;
-  vec2 topLeftCorner;
-  vec2 bottomRightCorner;
-  vec2 topRightCorner;
-  int treeLayerIndex;
-  Node* parent;
+class Node;
+typedef std::shared_ptr<Node> NodePtr;
+typedef std::weak_ptr<Node> WeakNodePtr;
 
-  void addChild(Node child) { children.push_back(child); };
-  void RemoveChild(Node child) {
-    children.erase(std::remove(children.begin(), children.end(), child), children.end());  // potential memory leak?
+class Node : public std::enable_shared_from_this<Node> {
+ public:
+  std::vector<NodePtr> children;
+  bool visited;
+  vec2 bottomLeftCorner, topLeftCorner, bottomRightCorner, topRightCorner;
+  int treeLayerIndex;
+  WeakNodePtr parent;  // Use weak_ptr to prevent circular references
+
+  Node() : treeLayerIndex(0) {}
+
+  Node(const vec2& bottomLeft, const vec2& topRight, int index) : treeLayerIndex(index) {
+    bottomLeftCorner = bottomLeft;
+    topRightCorner = topRight;
+    bottomRightCorner = vec2(topRight.x, bottomLeft.y);
+    topLeftCorner = vec2(bottomLeft.x, topRight.y);
   };
 
-  Node(Node* parentNode) : parent(parentNode) {
-    this->children = std::vector<Node>();
-    if (parentNode != NULL) parentNode->addChild(*this);
-  }
-};
-
-class RoomNode : public Node {
- public:
-  RoomNode(vec2 bottomLeftCorner, vec2 topRightCorner, Node parentNode, int index) : Node(parentNode) {
-    this->bottomLeftCorner = bottomLeftCorner;
-    this->topRightCorner = topRightCorner;
-    this->bottomRightCorner = vec2(topRightCorner.x, bottomLeftCorner.y);
-    this->topLeftCorner = vec2(bottomLeftCorner.x, topRightCorner.y);
-    this->treeLayerIndex = index;
-  }
-
-  RoomNode() : Node(NULL) {
-    this->bottomLeftCorner = vec2(0, 0);
-    this->topRightCorner = vec2(0, 0);
-    this->bottomRightCorner = vec2(0, 0);
-    this->topLeftCorner = vec2(0, 0);
-    this->treeLayerIndex = 0;
+  void addChild(std::shared_ptr<Node> child) {
+    children.push_back(child);
+    child->parent = shared_from_this();
   }
 
   int getWidth() { return topRightCorner.x - bottomLeftCorner.x; }
@@ -71,10 +67,10 @@ class Line {
 
 class BinarySpacePartitioner {
  public:
-  RoomNode rootNode;
+  NodePtr rootNode;
 
   BinarySpacePartitioner(int mapWidth, int mapHeight) {
-    rootNode = RoomNode(vec2(0, 0), vec2(mapWidth, mapHeight), NULL, 0);
+    rootNode = std::make_shared<Node>(vec2(0, 0), vec2(mapWidth, mapHeight), 0);
   };
 
   vec2 getCoordinatesForOrientation(Orientation orientation, vec2 bottomLeftCorner, vec2 topRightCorner,
@@ -100,57 +96,113 @@ class BinarySpacePartitioner {
                                                           minRoomHeight));
   }
 
-  void addNewNodeToCollections(std::vector<RoomNode>& listToReturn, std::queue<RoomNode>& graph, RoomNode node) {
-    listToReturn.push_back(node);
-    graph.push(node);
-  }
+  /*   void addNewNodeToCollections(std::vector<RoomNode>& listToReturn, std::queue<RoomNode>& graph, RoomNode node) {
+      listToReturn.push_back(node);
+      graph.push(node);
+    } */
 
-  void splitTheSpace(RoomNode currentNode, std::vector<RoomNode>& listToReturn, int minRoomWidth, int minRoomHeight,
-                     std::queue<RoomNode>& graph) {
+  void splitTheSpace(NodePtr currentNode, int minRoomWidth, int minRoomHeight) {
     Line line =
-        GetLineDividingSpace(currentNode.bottomLeftCorner, currentNode.topRightCorner, minRoomWidth, minRoomHeight);
-    RoomNode node1, node2;
+        GetLineDividingSpace(currentNode->bottomLeftCorner, currentNode->topRightCorner, minRoomWidth, minRoomHeight);
+    NodePtr node1, node2;
     if (line.orientation == HORIZONTAL) {
-      node1 = RoomNode(currentNode.bottomLeftCorner, vec2(currentNode.topRightCorner.x, line.coordinates.y),
-                       currentNode, currentNode.treeLayerIndex + 1);
-      node2 = RoomNode(vec2(currentNode.bottomLeftCorner.x, line.coordinates.y), currentNode.topRightCorner,
-                       currentNode, currentNode.treeLayerIndex + 1);
-    } else {
-      node1 = RoomNode(currentNode.bottomLeftCorner, vec2(line.coordinates.x, currentNode.topRightCorner.y),
-                       currentNode, currentNode.treeLayerIndex + 1);
-      node2 = RoomNode(vec2(line.coordinates.x, currentNode.bottomLeftCorner.y), currentNode.topRightCorner,
-                       currentNode, currentNode.treeLayerIndex + 1);
+      node1 =
+          std::make_shared<Node>(currentNode->bottomLeftCorner, vec2(currentNode->topRightCorner.x, line.coordinates.y),
+                                 currentNode->treeLayerIndex + 1);
+      node2 = std::make_shared<Node>(vec2(currentNode->bottomLeftCorner.x, line.coordinates.y),
+                                     currentNode->topRightCorner, currentNode->treeLayerIndex + 1);
+    } else {  // VERTICAL
+      node1 =
+          std::make_shared<Node>(currentNode->bottomLeftCorner, vec2(line.coordinates.x, currentNode->topRightCorner.y),
+                                 currentNode->treeLayerIndex + 1);
+      node2 = std::make_shared<Node>(vec2(line.coordinates.x, currentNode->bottomLeftCorner.y),
+                                     currentNode->topRightCorner, currentNode->treeLayerIndex + 1);
     }
-    addNewNodeToCollections(listToReturn, graph, node1);
-    addNewNodeToCollections(listToReturn, graph, node2);
+    // addNewNodeToCollections(listToReturn, graph, node1);
+    // addNewNodeToCollections(listToReturn, graph, node2);
+    currentNode->addChild(node1);
+    currentNode->addChild(node2);
   }
 
-  std::vector<RoomNode> prepareNodesCollection(int maxIterations, int minRoomWidth, int minRoomHeight) {
-    std::queue<RoomNode> graph = std::queue<RoomNode>();
-    std::vector<RoomNode> listToReturn = std::vector<RoomNode>();
-    graph.push(rootNode);
-    listToReturn.push_back(rootNode);
-    int iterations = 0;
-    while (iterations < maxIterations && !graph.empty()) {
-      iterations++;
-      RoomNode currentNode = graph.front();
-      graph.pop();
-      if (currentNode.getWidth() >= minRoomWidth * 2 || currentNode.getHeight() >= minRoomHeight * 2) {
-        splitTheSpace(currentNode, listToReturn, minRoomWidth, minRoomHeight, graph);
+  std::vector<NodePtr> collectAllNodesIteratively(NodePtr inputRootNode) {
+    std::vector<NodePtr> allNodes;
+    if (!inputRootNode) return allNodes;  // Early return if the root is null
+    std::queue<NodePtr> toProcess;
+    toProcess.push(inputRootNode);
+
+    while (!toProcess.empty()) {
+      auto currentNode = toProcess.front();
+      toProcess.pop();
+
+      allNodes.push_back(currentNode);  // Process the current node
+
+      // Enqueue all children of the current node for processing
+      for (auto& child : currentNode->children) {
+        toProcess.push(child);
       }
     }
-    return listToReturn;
-  };
+    return allNodes;
+  }
+
+  std::vector<NodePtr> prepareNodesCollection(int maxIterations, int minRoomWidth, int minRoomHeight) {
+    std::queue<NodePtr> graph;
+    graph.push(rootNode);
+    int iterations = 0;
+    while (iterations < maxIterations && !graph.empty()) {
+      auto currentNode = graph.front();
+      graph.pop();
+      splitTheSpace(currentNode, minRoomWidth, minRoomHeight);
+
+      // Enqueue children for further processing
+      for (auto& child : currentNode->children) {
+        graph.push(child);
+      }
+      iterations++;
+    }
+
+    // Collect all nodes after splitting
+    std::vector<NodePtr> allNodes = collectAllNodesIteratively(rootNode);
+    return allNodes;
+  }
 };
 
 class MapCreator {
  public:
-  std::vector<RoomNode> allNodesCollection = std::vector<RoomNode>();
+  std::vector<NodePtr> allNodesCollection;
   int mapWidth, mapHeight;
 
   MapCreator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight){};
 
-  std::vector<Node> calculateMap(int maxIterations, int minRoomWidth, int minRoomHeight) {
+  std::vector<NodePtr> calculateMap(int maxIterations, int minRoomWidth, int minRoomHeight) {
     BinarySpacePartitioner bsp(mapWidth, mapHeight);
+    allNodesCollection = bsp.prepareNodesCollection(maxIterations, minRoomWidth, minRoomHeight);
+    return allNodesCollection;
   };
 };
+
+int main() {
+  MapCreator mapCreator(100, 100);
+  std::vector<NodePtr> map = mapCreator.calculateMap(1, 25, 25);
+  printf(map.size() > 0 ? "Map created successfully with %lu rooms\n" : "Map creation failed\n", map.size());
+
+  printf("pointer of the first element: %p\n", map[0].get());
+  printf("first element map width: %d\n", map[0]->getWidth());
+  printf("first element map height: %d\n", map[0]->getHeight());
+  // printf("first element parent: %p\n", map[0]->parent);
+  printf("first element children: %lu\n", map[0]->children.size());
+
+  printf("second element map width: %d\n", map[1]->getWidth());
+  printf("second element map height: %d\n", map[1]->getHeight());
+  // printf("second element parent: %p\n", map[1]->parent);
+  printf("second element children: %lu\n", map[1]->children.size());
+
+  printf("third element map width: %d\n", map[2]->getWidth());
+  printf("third element map height: %d\n", map[2]->getHeight());
+  // printf("third element parent: %p\n", map[2]->parent);
+  printf("third element children: %lu\n", map[2]->children.size());
+
+  printf("parent width: %d\n", map[1]->parent.lock()->topRightCorner.x);
+  printf("parent height: %d\n", map[1]->parent.lock()->topRightCorner.y);
+  printf("parent children: %lu\n", map[1]->parent.lock()->children.size());
+  return 0;
+}
