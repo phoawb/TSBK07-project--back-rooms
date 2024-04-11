@@ -4,14 +4,23 @@
 #include "components/Camera.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
+#include "components/Gravity.hpp"
 #include "core/Coordinator.hpp"
 
 extern Coordinator gCoordinator;
 
 bool mouseToggle = false;
+// shift for run
+bool prevShiftPressed = false;
+bool moveSpeedToggle = false;
+// space for jump
+bool velocityAdded = false;
+// g for gravity toggle
+bool prevGravityPressed = false;
+bool gravityOn = true;
 
 void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
-  float moveSpeed_xz = 0.7f;
+  float moveSpeed_xz;
   const float moveSpeed_y = 0.1f;
   const float rotationSpeed = 0.05f;
   const float mouseSensitivity = 0.003f;
@@ -20,6 +29,7 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
     auto& camera = gCoordinator.GetComponent<Camera>(entity);
     auto& rigidBody = gCoordinator.GetComponent<RigidBody>(entity);
+    auto& gravity = gCoordinator.GetComponent<Gravity>(entity);
 
     vec3 cameraPosition = trans2pos(transform.translation);
 
@@ -51,7 +61,21 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     rigidBody.velocity.x = 0;
     rigidBody.velocity.z = 0;
 
-    // if (glutKeyIsDown(GLUT_KEY_SHIFT)) moveSpeed_xz = 1.0f;
+    // Gravity toggle
+    bool currentGravityPressed = glutKeyIsDown('g');
+    if (currentGravityPressed && !prevGravityPressed) {
+      gravityOn = !gravityOn;
+    }
+    prevGravityPressed = currentGravityPressed; // Update the state for the next frame
+    gravity.acceleration = gravityOn ? vec3(0.0f, -0.03f, 0.0f) : vec3(0.0f, 0.0f, 0.0f);
+
+    // Shift for run
+    bool currentShiftPressed = glutKeyIsDown(GLUT_KEY_SHIFT);
+    if (currentShiftPressed && !prevShiftPressed) {
+        moveSpeedToggle = !moveSpeedToggle;
+    }
+    moveSpeed_xz = moveSpeedToggle ? 1.0f : 0.7f;
+    prevShiftPressed = currentShiftPressed; // Update the state for the next frame
 
     // Forward and backward
     if (glutKeyIsDown('w'))
@@ -76,6 +100,16 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
 
     if (glutKeyIsDown(GLUT_KEY_UP) || glutKeyIsDown('q')) rigidBody.velocity.y += moveSpeed_y;
     if (glutKeyIsDown(GLUT_KEY_DOWN) || glutKeyIsDown('e')) rigidBody.velocity.y -= moveSpeed_y;
+
+    if (glutKeyIsDown(GLUT_KEY_SPACE)) {
+      if (!velocityAdded) {
+        rigidBody.velocity.y = 0.5f;
+        velocityAdded = true;
+      }
+    } else {
+      velocityAdded = false;
+    }
+
 
     // mouse
     if (mouseToggle) {
