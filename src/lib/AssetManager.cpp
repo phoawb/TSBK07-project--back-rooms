@@ -33,8 +33,18 @@ void AssetManager::Init() {
   LoadTGATextureSimple("textures/offwhite.tga", &offwhite);
   tex2id[OFFWHITE] = 6;
 
+  glActiveTexture(GL_TEXTURE7);
+  LoadTGATextureSimple("textures/black.tga", &black);
+  tex2id[BLACK] = 7;
+
+  glActiveTexture(GL_TEXTURE8);
+  LoadTGATextureSimple("textures/carton.tga", &carton);
+  tex2id[CARTON_TEX] = 8;
+
   modelType2Model[SKYBOX] = LoadModelPlus("objects/skybox.obj");
   modelType2Model[SPHERE] = LoadModelPlus("objects/groundsphere.obj");
+  modelType2Model[CHAIR] = LoadModelPlus("objects/chair.obj");
+  modelType2Model[CARTON] = LoadModelPlus("objects/carton.obj");
 }
 
 GLuint AssetManager::getShaderId(ShaderType shader) { return shader2id[shader]; }

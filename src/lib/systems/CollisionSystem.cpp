@@ -53,7 +53,7 @@ void CollisionSystem::Update() {
         vec3 max1;
         if (firstAabb.isCamera) {
           max1.x = trans2pos(firstTransform.translation).x + firstAabb.dimensions.x / 2.0f;
-          max1.y = trans2pos(firstTransform.translation).y + firstAabb.dimensions.y;
+          max1.y = trans2pos(firstTransform.translation).y;
           max1.z = trans2pos(firstTransform.translation).z + firstAabb.dimensions.z / 2.0f;
         } else if (firstAabb.isCentered) {
           max1 = trans2pos(firstTransform.translation) + firstAabb.dimensions / 2.0f;
