@@ -15,6 +15,7 @@ typedef struct vec2 {
 } vec2, *vec2_ptr;
 
 int randRange(int min, int max) {
+  if (min > max) std::swap(min, max);
   static std::random_device rd;                     // Obtain a random number from hardware
   static std::mt19937 gen(rd());                    // Seed the generator
   std::uniform_int_distribution<> distr(min, max);  // Define the range
@@ -74,8 +75,9 @@ class BinarySpacePartitioner {
 
   vec2 getCoordinatesForOrientation(Orientation orientation, vec2 bottomLeftCorner, vec2 topRightCorner,
                                     int minRoomWidth, int minRoomHeight) {
-    if (orientation == HORIZONTAL)
+    if (orientation == HORIZONTAL) {
       return vec2(0, randRange((bottomLeftCorner.y + minRoomHeight), (topRightCorner.y - minRoomHeight)));
+    }
     return vec2(randRange((bottomLeftCorner.x + minRoomWidth), (topRightCorner.x - minRoomWidth)), 0);
   }
 
@@ -91,8 +93,9 @@ class BinarySpacePartitioner {
       orientation = HORIZONTAL;
     }
 
-    return Line(orientation, getCoordinatesForOrientation(orientation, bottomLeftCorner, topRightCorner, minRoomWidth,
-                                                          minRoomHeight));
+    Line returnLine = Line(orientation, getCoordinatesForOrientation(orientation, bottomLeftCorner, topRightCorner,
+                                                                     minRoomWidth, minRoomHeight));
+    return returnLine;
   }
 
   void splitTheSpace(NodePtr currentNode, int minRoomWidth, int minRoomHeight) {
@@ -159,6 +162,31 @@ class BinarySpacePartitioner {
   }
 };
 
+std::vector<NodePtr> findLeafNodes(const NodePtr& rootNode) {
+  std::vector<NodePtr> leafNodes;
+  if (!rootNode) return leafNodes;  // Return empty if the root is nullptr
+
+  std::queue<NodePtr> queue;
+  queue.push(rootNode);
+
+  while (!queue.empty()) {
+    auto currentNode = queue.front();
+    queue.pop();
+
+    // If a node has no children, it's a leaf node
+    if (currentNode->children.empty()) {
+      leafNodes.push_back(currentNode);
+    } else {
+      // Otherwise, enqueue its children for further exploration
+      for (auto& child : currentNode->children) {
+        queue.push(child);
+      }
+    }
+  }
+
+  return leafNodes;
+}
+
 class MapCreator {
  public:
   std::vector<NodePtr> allNodesCollection;
@@ -169,34 +197,15 @@ class MapCreator {
   std::vector<NodePtr> calculateMap(int maxIterations, int minRoomWidth, int minRoomHeight) {
     BinarySpacePartitioner bsp(mapWidth, mapHeight);
     allNodesCollection = bsp.prepareNodesCollection(maxIterations, minRoomWidth, minRoomHeight);
+    std::vector<NodePtr> roomSpaces = findLeafNodes(bsp.rootNode);
     return allNodesCollection;
   };
 };
 
-/* int main() {
+int main() {
   MapCreator mapCreator(100, 100);
-  std::vector<NodePtr> map = mapCreator.calculateMap(1, 25, 25);
-  printf(map.size() > 0 ? "Map created successfully with %lu rooms\n" : "Map creation failed\n", map.size());
+  std::vector<NodePtr> map = mapCreator.calculateMap(10, 25, 25);
+  // printf(map.size() > 0 ? "Map created successfully with %lu rooms\n" : "Map creation failed\n", map.size());
 
-  printf("pointer of the first element: %p\n", map[0].get());
-  printf("first element map width: %d\n", map[0]->getWidth());
-  printf("first element map height: %d\n", map[0]->getHeight());
-  // printf("first element parent: %p\n", map[0]->parent);
-  printf("first element children: %lu\n", map[0]->children.size());
-
-  printf("second element map width: %d\n", map[1]->getWidth());
-  printf("second element map height: %d\n", map[1]->getHeight());
-  // printf("second element parent: %p\n", map[1]->parent);
-  printf("second element children: %lu\n", map[1]->children.size());
-
-  printf("third element map width: %d\n", map[2]->getWidth());
-  printf("third element map height: %d\n", map[2]->getHeight());
-  // printf("third element parent: %p\n", map[2]->parent);
-  printf("third element children: %lu\n", map[2]->children.size());
-
-  printf("parent width: %d\n", map[1]->parent.lock()->topRightCorner.x);
-  printf("parent height: %d\n", map[1]->parent.lock()->topRightCorner.y);
-  printf("parent children: %lu\n", map[1]->parent.lock()->children.size());
   return 0;
 }
- */
