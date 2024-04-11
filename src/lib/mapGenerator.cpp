@@ -211,17 +211,23 @@ std::vector<NodePtr> findLeafNodes(const NodePtr& rootNode) {
 
 class RoomGenerator {
  public:
-  RoomGenerator(int maxIterations, int minRoomWidth, int minRoomHeight)
-      : maxIterations(maxIterations), minRoomWidth(minRoomWidth), minRoomHeight(minRoomHeight) {}
+  RoomGenerator(){};  // Default constructor
 
   std::vector<NodePtr> generateRooms(std::vector<NodePtr> roomSpaces) {
     std::vector<NodePtr> rooms;
-    for (auto& roomSpace : roomSpaces) {
+    for (auto roomSpace : roomSpaces) {
+      vec2 newBottomLeftCorner =
+          generateBottomLeftCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, 0.1, 1);
+      vec2 newTopRightCorner =
+          generateTopRightCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, 0.9, 1);
+      roomSpace->bottomLeftCorner = newBottomLeftCorner;
+      roomSpace->topRightCorner = newTopRightCorner;
+      roomSpace->bottomRightCorner = vec2(newTopRightCorner.x, newBottomLeftCorner.y);
+      roomSpace->topLeftCorner = vec2(newBottomLeftCorner.x, newTopRightCorner.y);
+      rooms.push_back(roomSpace);
     }
+    return rooms;
   };
-
- private:
-  int maxIterations, minRoomWidth, minRoomHeight;
 };
 
 class MapCreator {
@@ -235,15 +241,15 @@ class MapCreator {
     BinarySpacePartitioner bsp(mapWidth, mapHeight);
     allNodesCollection = bsp.prepareNodesCollection(maxIterations, minRoomWidth, minRoomHeight);
     std::vector<NodePtr> roomSpaces = findLeafNodes(bsp.rootNode);
-    RoomGenerator roomGenerator = RoomGenerator(maxIterations, minRoomWidth, minRoomHeight);
+    RoomGenerator roomGenerator = RoomGenerator();
     std::vector<NodePtr> rooms = roomGenerator.generateRooms(roomSpaces);
-    return allNodesCollection;
+    return rooms;
   };
 };
 
 int main() {
   MapCreator mapCreator(100, 100);
-  std::vector<NodePtr> map = mapCreator.calculateMap(10, 25, 25);
+  std::vector<NodePtr> map = mapCreator.calculateMap(1, 25, 25);
   // printf(map.size() > 0 ? "Map created successfully with %lu rooms\n" : "Map creation failed\n", map.size());
 
   return 0;
