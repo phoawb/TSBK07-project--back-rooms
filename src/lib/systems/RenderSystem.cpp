@@ -6,6 +6,7 @@
 #include "boxes.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
+#include "components/Gravity.hpp"
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
@@ -87,6 +88,7 @@ void RenderSystem::Init() {
   gCoordinator.AddComponent(
       mCamera,
       RigidBody{.velocity = vec3(0.0f, 0.0f, 0.0f), .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
+  gCoordinator.AddComponent(mCamera, Gravity{.acceleration = vec3(0.0f, -0.03f, 0.0f)});
 
   printError("init RenderSystem");
 }

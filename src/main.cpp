@@ -5,6 +5,7 @@
 #include "MicroGlut.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
+#include "components/Gravity.hpp"
 #include "components/Light.hpp"
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
@@ -47,7 +48,6 @@ void display(void) {
   lightingSystem->Update();
 
   printError("display");
-  glutSwapBuffers();
 }
 
 /// @brief Mouse callback function
@@ -81,6 +81,7 @@ void spawnBall(mat4 startTrans, vec3 velocity) {
   auto groundSphereModel = assetManager.getModel(ModelType::SPHERE);
   gCoordinator.AddComponent(groundSphere, Renderable{.model = groundSphereModel, .shader = TERRAIN, .texture = GRASS});
   gCoordinator.AddComponent(groundSphere, AABB{.dimensions = vec3(2, 2, 2)});
+  gCoordinator.AddComponent(groundSphere, Gravity{.acceleration = vec3(0.0f, -0.03f, 0.0f)});
 }
 
 void spawnCarton(mat4 startTrans, vec3 velocity) {
@@ -91,6 +92,7 @@ void spawnCarton(mat4 startTrans, vec3 velocity) {
   auto cartonModel = assetManager.getModel(ModelType::CARTON);
   gCoordinator.AddComponent(carton, Renderable{.model = cartonModel, .shader = TERRAIN, .texture = CARTON_TEX});
   gCoordinator.AddComponent(carton, AABB{.dimensions = vec3(2, 2, 2)});
+  gCoordinator.AddComponent(carton, Gravity{.acceleration = vec3(0.0f, -0.03f, 0.0f)});
 }
 
 void spawnChair(mat4 startTrans, vec3 velocity) {
@@ -102,6 +104,7 @@ void spawnChair(mat4 startTrans, vec3 velocity) {
   auto chairModel = assetManager.getModel(ModelType::CHAIR);
   gCoordinator.AddComponent(chair, Renderable{.model = chairModel, .shader = TERRAIN, .texture = TextureType::WHITE});
   gCoordinator.AddComponent(chair, AABB{.dimensions = vec3(1, 1, 1), .isCentered = true});
+  gCoordinator.AddComponent(chair, Gravity{.acceleration = vec3(0.0f, -0.03f, 0.0f)});
 }
 
 int main(int argc, char** argv) {
@@ -121,6 +124,7 @@ int main(int argc, char** argv) {
   gCoordinator.RegisterComponent<Light>();
   gCoordinator.RegisterComponent<AABB>();
   gCoordinator.RegisterComponent<RigidBody>();
+  gCoordinator.RegisterComponent<Gravity>();
 
   cameraControlSystem = gCoordinator.RegisterSystem<CameraControlSystem>();
   {
@@ -128,6 +132,7 @@ int main(int argc, char** argv) {
     signature.set(gCoordinator.GetComponentType<Camera>());
     signature.set(gCoordinator.GetComponentType<Transform>());
     signature.set(gCoordinator.GetComponentType<RigidBody>());
+    signature.set(gCoordinator.GetComponentType<Gravity>());
     gCoordinator.SetSystemSignature<CameraControlSystem>(signature);
   }
 
@@ -136,6 +141,7 @@ int main(int argc, char** argv) {
     Signature signature;
     signature.set(gCoordinator.GetComponentType<Transform>());
     signature.set(gCoordinator.GetComponentType<RigidBody>());
+    signature.set(gCoordinator.GetComponentType<Gravity>());
     gCoordinator.SetSystemSignature<PhysicsSystem>(signature);
   }
   physicsSystem->Init();
