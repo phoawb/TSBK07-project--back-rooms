@@ -1,18 +1,24 @@
-// #include "VectorUtils4.h"
+#include "LittleOBJLoader.h"
+#include "VectorUtils4.h"
 #include "algorithm"
+#include "components/Renderable.hpp"
+#include "components/Transform.hpp"
+#include "core/Coordinator.hpp"
 #include "memory"
 #include "queue"
 #include "random"
 #include "stdio.h"
 #include "vector"
 
+extern Coordinator gCoordinator;
+
 // vec2 is mostly used for texture cordinates, so I havn't bothered defining any operations for it
-typedef struct vec2 {
+/* typedef struct vec2 {
   int x, y;
   vec2() {}
   vec2(int x2, int y2) : x(x2), y(y2) {}
   bool operator==(const vec2& other) const { return x == other.x && y == other.y; }
-} vec2, *vec2_ptr;
+} vec2, *vec2_ptr; */
 
 int randRange(int min, int max) {
   if (min > max) std::swap(min, max);
@@ -247,6 +253,21 @@ class MapGenerator {
   };
 };
 
+Model* getFloorModel(float groundSize) {
+  vec3 vertices[] = {vec3(-groundSize, 0.0f, -groundSize), vec3(-groundSize, 0.0f, groundSize),
+                     vec3(groundSize, -0.0f, -groundSize), vec3(groundSize, -0.0f, groundSize)};
+
+  vec3 vertex_normals[] = {vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+                           vec3(0.0f, 1.0f, 0.0f)};
+
+  vec2 tex_coords[] = {vec2(0.0f, 0.0f), vec2(0.0f, 20.0f), vec2(20.0f, 0.0f), vec2(20.0f, 20.0f)};
+  GLuint indices[] = {0, 1, 2, 1, 3, 2};
+  vec3 colors[] = {100.f, 0.f, 0.f};
+  int numVert = 4, numInd = 6;
+  Model* model = LoadDataToModel(vertices, vertex_normals, tex_coords, colors, indices, numVert, numInd);
+  return model;
+}
+
 class MapCreator {
   int mapWidth, mapHeight;
   int maxIterations, minRoomWidth, minRoomHeight;
@@ -260,6 +281,27 @@ class MapCreator {
     for (auto room : map) {
     }
     // printf(map.size() > 0 ? "Map created successfully with %lu rooms\n" : "Map creation failed\n", map.size());
+  }
+
+  void createFloorModel(vec2 bottomLeftCorner, vec2 topRightCorner, TextureType textureType = OFFICE_FLOOR) {
+    vec3 bottomLeftVertex = vec3(bottomLeftCorner.y, 0, bottomLeftCorner.x);
+    vec3 bottomRightVertex = vec3(topRightCorner.y, 0, bottomLeftCorner.x);
+    vec3 topLeftVertex = vec3(bottomLeftCorner.y, 0, topRightCorner.x);
+    vec3 topRightVertex = vec3(topRightCorner.y, 0, topRightCorner.x);
+    vec3 vertices[] = {bottomLeftVertex, bottomRightVertex, topLeftVertex, topRightVertex};
+    vec3 vertex_normals[] = {vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+                             vec3(0.0f, 1.0f, 0.0f)};
+    vec2 tex_coords[] = {vec2(0.0f, 0.0f), vec2(0.0f, 20.0f), vec2(20.0f, 0.0f), vec2(20.0f, 20.0f)};
+    GLuint indices[] = {0, 1, 2, 1, 3, 2};
+    vec3 colors[] = {100.f, 0.f, 0.f};
+    int numVert = 4, numInd = 6;
+    Model* floorModel = LoadDataToModel(vertices, vertex_normals, tex_coords, colors, indices, numVert, numInd);
+
+    auto floor = gCoordinator.CreateEntity();
+    gCoordinator.AddComponent(floor,
+                              Transform{.translation = T(bottomLeftVertex),
+                                        .rotation = Ry(0)});  // we define the floor's origin at the bottom left corner
+    gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = textureType});
   }
 };
 
