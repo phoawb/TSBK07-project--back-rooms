@@ -12,7 +12,6 @@
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
 #include "genMap.h"
-#include "ground.h"
 #include "systems/CameraControlSystem.hpp"
 #include "systems/CollisionSystem.hpp"
 #include "systems/LightingSystem.hpp"
@@ -20,7 +19,6 @@
 #include "systems/RenderSystem.hpp"
 #include "vector"
 
-float GROUND_SIZE = 100;
 int WINDOW_SIZE = 600;
 
 GLfloat t;
@@ -63,7 +61,7 @@ void mouse(int x, int y) {
 }
 
 void createLightEntities() {
-  int lightCount = 4;
+  int lightCount = 6;
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
@@ -152,18 +150,9 @@ int main(int argc, char** argv) {
 
   genMap();
 
-  // fly up
-  spawnBall(T(-85, 5, 60), vec3(0.f, 0.2f, 0.0f));
-  spawnBall(T(-75, 5, 60), vec3(0.f, 0.2f, 0.0f));
-
-  // fly into each other
-  spawnBall(T(-85, 5, 50), vec3(0.2f, 0.0f, 0.f));
-  spawnBall(T(-75, 5, 50), vec3(-0.2f, 0.0f, 0.f));
-
-  auto ground = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(ground, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(
-      ground, Renderable{.model = getGroundModel(GROUND_SIZE), .shader = TERRAIN, .texture = OFFICE_FLOOR});
+  spawnBall(T(-95, 10, 50), vec3(0.f, 0.3f, 0.0f));
+  spawnBall(T(-85, 10, 50), vec3(0.f, 0.5f, 0.0f));
+  spawnBall(T(-75, 10, 50), vec3(0.f, 0.7f, 0.0f));
 
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);

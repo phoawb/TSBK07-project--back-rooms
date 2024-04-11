@@ -39,16 +39,71 @@ void CollisionSystem::Update() {
         auto& secondTransform = gCoordinator.GetComponent<Transform>(secondEntity);
         auto const& secondAabb = gCoordinator.GetComponent<AABB>(secondEntity);
 
-        vec3 min1 = trans2pos(firstTransform.translation);
-        vec3 max1 = min1 + firstAabb.dimensions;
+        vec3 min1;
+        if (firstAabb.isCamera) {
+          min1.x = trans2pos(firstTransform.translation).x - firstAabb.dimensions.x / 2.0f;
+          min1.y = trans2pos(firstTransform.translation).y - firstAabb.dimensions.y;
+          min1.z = trans2pos(firstTransform.translation).z - firstAabb.dimensions.z / 2.0f;
+        } else if (firstAabb.isCentered) {
+          min1 = trans2pos(firstTransform.translation) - firstAabb.dimensions / 2.0f;
+        } else {
+          min1 = trans2pos(firstTransform.translation);
+        }
+
+        vec3 max1;
+        if (firstAabb.isCamera) {
+          max1.x = trans2pos(firstTransform.translation).x + firstAabb.dimensions.x / 2.0f;
+          max1.y = trans2pos(firstTransform.translation).y + firstAabb.dimensions.y;
+          max1.z = trans2pos(firstTransform.translation).z + firstAabb.dimensions.z / 2.0f;
+        } else if (firstAabb.isCentered) {
+          max1 = trans2pos(firstTransform.translation) + firstAabb.dimensions / 2.0f;
+        } else {
+          max1 = min1 + firstAabb.dimensions;
+        }
 
         vec3 min2 = trans2pos(secondTransform.translation);
         vec3 max2 = min2 + secondAabb.dimensions;
 
         if (collisionAABB(min1, max1, min2, max2)) {
-          firstTransform.translation.m[3] += -firstRigidBody.velocity.x;
-          firstTransform.translation.m[7] += -firstRigidBody.velocity.y;
-          firstTransform.translation.m[11] += -firstRigidBody.velocity.z;
+          float penetrationDepthXright = max1.x - min2.x;
+          float penetrationDepthXleft = max2.x - min1.x;
+          float minPenetrationDepthX = std::min(penetrationDepthXright, penetrationDepthXleft);
+
+          float penetrationDepthYtop = max1.y - min2.y;
+          float penetrationDepthYbottom = max2.y - min1.y;
+          float minPenetrationDepthY = std::min(penetrationDepthYtop, penetrationDepthYbottom);
+
+          float penetrationDepthZback = max1.z - min2.z;
+          float penetrationDepthZfront = max2.z - min1.z;
+          float minPenetrationDepthZ = std::min(penetrationDepthZback, penetrationDepthZfront);
+          // Determine the collision direction based on the smallest penetration depth
+          if (minPenetrationDepthX < minPenetrationDepthY && minPenetrationDepthX < minPenetrationDepthZ) {
+            // Horizontal collision on X-axis
+            if (penetrationDepthXright < penetrationDepthXleft) {
+              firstTransform.translation.m[3] -= minPenetrationDepthX;
+            } else {
+              firstTransform.translation.m[3] += minPenetrationDepthX;
+            }
+            firstRigidBody.velocity.x = 0.0f;
+          } else if (minPenetrationDepthY < minPenetrationDepthZ) {
+            // Vertical collision on Y-axis
+            firstRigidBody.velocity.y = 0.0f;
+            if (penetrationDepthYtop < penetrationDepthYbottom) {
+              firstTransform.translation.m[7] -= minPenetrationDepthY;
+            } else {
+              firstTransform.translation.m[7] += minPenetrationDepthY;
+            }
+          } else {
+            // Collision on Z-axis
+            firstRigidBody.velocity.z = 0.0f;
+            if (penetrationDepthZback < penetrationDepthZfront) {
+              firstTransform.translation.m[11] -= minPenetrationDepthZ;
+            } else {
+              firstTransform.translation.m[11] += minPenetrationDepthZ;
+            }
+          }
+          // After resolving the collision, reset the velocity and acceleration if needed
+          firstRigidBody.acceleration = vec3(0.0f, 0.0f, 0.0f);
         }
       }
     }
