@@ -1,4 +1,4 @@
-#include "VectorUtils4.h"
+// #include "VectorUtils4.h"
 #include "algorithm"
 #include "memory"
 #include "queue"
@@ -6,13 +6,13 @@
 #include "stdio.h"
 #include "vector"
 
-/* // vec2 is mostly used for texture cordinates, so I havn't bothered defining any operations for it
+// vec2 is mostly used for texture cordinates, so I havn't bothered defining any operations for it
 typedef struct vec2 {
   int x, y;
   vec2() {}
   vec2(int x2, int y2) : x(x2), y(y2) {}
   bool operator==(const vec2& other) const { return x == other.x && y == other.y; }
-} vec2, *vec2_ptr; */
+} vec2, *vec2_ptr;
 
 int randRange(int min, int max) {
   static std::random_device rd;                     // Obtain a random number from hardware
@@ -95,11 +95,6 @@ class BinarySpacePartitioner {
                                                           minRoomHeight));
   }
 
-  /*   void addNewNodeToCollections(std::vector<RoomNode>& listToReturn, std::queue<RoomNode>& graph, RoomNode node) {
-      listToReturn.push_back(node);
-      graph.push(node);
-    } */
-
   void splitTheSpace(NodePtr currentNode, int minRoomWidth, int minRoomHeight) {
     Line line =
         GetLineDividingSpace(currentNode->bottomLeftCorner, currentNode->topRightCorner, minRoomWidth, minRoomHeight);
@@ -117,8 +112,7 @@ class BinarySpacePartitioner {
       node2 = std::make_shared<Node>(vec2(line.coordinates.x, currentNode->bottomLeftCorner.y),
                                      currentNode->topRightCorner, currentNode->treeLayerIndex + 1);
     }
-    // addNewNodeToCollections(listToReturn, graph, node1);
-    // addNewNodeToCollections(listToReturn, graph, node2);
+
     currentNode->addChild(node1);
     currentNode->addChild(node2);
   }
