@@ -11,8 +11,8 @@ extern Coordinator gCoordinator;
 bool mouseToggle = false;
 
 void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
-  const float moveSpeed = 0.6f;
-  const float rotationSpeed = 0.02f;
+  const float moveSpeed = 1.0f;
+  const float rotationSpeed = 0.05f;
   const float mouseSensitivity = 0.003f;
 
   for (auto& entity : mEntities) {
