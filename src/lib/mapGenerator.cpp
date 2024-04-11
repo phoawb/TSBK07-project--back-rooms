@@ -247,6 +247,22 @@ class MapGenerator {
   };
 };
 
+class MapCreator {
+  int mapWidth, mapHeight;
+  int maxIterations, minRoomWidth, minRoomHeight;
+  // int corridorWidth;
+
+  void start() { createMap(); }
+
+  void createMap() {
+    MapGenerator mapGenerator(mapWidth, mapHeight);
+    std::vector<NodePtr> map = mapGenerator.calculateMap(maxIterations, minRoomWidth, minRoomHeight);
+    for (auto room : map) {
+    }
+    // printf(map.size() > 0 ? "Map created successfully with %lu rooms\n" : "Map creation failed\n", map.size());
+  }
+};
+
 int main() {
   MapGenerator mapGenerator(100, 100);
   std::vector<NodePtr> map = mapGenerator.calculateMap(1, 25, 25);
