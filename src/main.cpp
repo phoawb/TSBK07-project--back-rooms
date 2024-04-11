@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
   lightingSystem->Init();
 
   // genMap();
-  MapCreator mapCreator(500, 500, 30, 60, 60);
+  MapCreator mapCreator(1000, 1000, 50, 150, 150);
   mapCreator.start();
 
   // fly up
