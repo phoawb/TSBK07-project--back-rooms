@@ -1,19 +1,18 @@
-#include "memory"
-#include "random"
-
-// #include "VectorUtils4.h"
+#include "VectorUtils4.h"
 #include "algorithm"
+#include "memory"
 #include "queue"
+#include "random"
 #include "stdio.h"
 #include "vector"
 
-// vec2 is mostly used for texture cordinates, so I havn't bothered defining any operations for it
+/* // vec2 is mostly used for texture cordinates, so I havn't bothered defining any operations for it
 typedef struct vec2 {
   int x, y;
   vec2() {}
   vec2(int x2, int y2) : x(x2), y(y2) {}
   bool operator==(const vec2& other) const { return x == other.x && y == other.y; }
-} vec2, *vec2_ptr;
+} vec2, *vec2_ptr; */
 
 int randRange(int min, int max) {
   static std::random_device rd;                     // Obtain a random number from hardware
@@ -180,7 +179,7 @@ class MapCreator {
   };
 };
 
-int main() {
+/* int main() {
   MapCreator mapCreator(100, 100);
   std::vector<NodePtr> map = mapCreator.calculateMap(1, 25, 25);
   printf(map.size() > 0 ? "Map created successfully with %lu rooms\n" : "Map creation failed\n", map.size());
@@ -206,3 +205,4 @@ int main() {
   printf("parent children: %lu\n", map[1]->parent.lock()->children.size());
   return 0;
 }
+ */
