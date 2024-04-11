@@ -11,7 +11,7 @@ extern Coordinator gCoordinator;
 bool mouseToggle = false;
 
 void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
-  const float moveSpeed_xz = 0.4f;
+  float moveSpeed_xz = 0.7f;
   const float moveSpeed_y = 0.1f;
   const float rotationSpeed = 0.02f;
   const float mouseSensitivity = 0.003f;
@@ -37,12 +37,9 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     camera.theta = fmod(camera.theta, 2 * M_PI);  // fmax(0.f, fmod(theta, 2 * M_PI));
 
     // Ensure theta is within 0 to 2pi
-    if (camera.theta < 0) {
-      camera.theta += 2 * M_PI;
-    } else if (camera.theta > 2 * M_PI) {
-      camera.theta -= 2 * M_PI;
-    }
-
+    if (camera.theta < 0) camera.theta += 2 * M_PI;
+    else if (camera.theta > 2 * M_PI) camera.theta -= 2 * M_PI;
+    
     // Update camera position based on WASD keys
     vec3 forward = normalize(camera.lookAt - cameraPosition);    // Direction camera is facing
     forward.y = 0;                                               // Remove y-component
@@ -51,6 +48,8 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
 
     rigidBody.velocity.x = 0;
     rigidBody.velocity.z = 0;
+
+    //if (glutKeyIsDown(GLUT_KEY_SHIFT)) moveSpeed_xz = 1.0f;
 
     // Forward and backward
     if (glutKeyIsDown('w'))

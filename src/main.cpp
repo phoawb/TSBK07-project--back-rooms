@@ -150,9 +150,9 @@ int main(int argc, char** argv) {
 
   genMap();
 
-  // fly up
-  spawnBall(T(-95, 10, 50), vec3(0.f, 0.2f, 0.0f));
-  spawnBall(T(-75, 10, 50), vec3(0.f, 0.2f, 0.0f));
+  spawnBall(T(-95, 10, 50), vec3(0.f, 0.3f, 0.0f));
+  spawnBall(T(-85, 10, 50), vec3(0.f, 0.5f, 0.0f));
+  spawnBall(T(-75, 10, 50), vec3(0.f, 0.7f, 0.0f));
 
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);

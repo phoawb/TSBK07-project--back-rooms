@@ -4,5 +4,6 @@
 
 struct AABB {
   vec3 dimensions;
-  bool centered = false;
+  bool isCentered = false;
+  bool isCamera = false;
 };

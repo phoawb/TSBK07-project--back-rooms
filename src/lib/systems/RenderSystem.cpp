@@ -70,10 +70,11 @@ void RenderSystem::Init() {
   printf("Camera entity: %d\n", mCamera);
 
   // Camera Attributes
-  float cameraSide = 1;
+  float cameraSide = 3;
+  float cameraHeight = 10;
   vec3 cameraStartPos = vec3(-85.0f, 10.0f, 80.0f);
   mat4 cameraStartTranslation = T(-85.0f, 10.0f, 80.0f);
-  vec3 cameraDimensions = vec3(cameraSide, cameraSide, cameraSide);
+  vec3 cameraDimensions = vec3(cameraSide, cameraHeight, cameraSide);
 
   // Add component to entity
   gCoordinator.AddComponent(mCamera, Transform{.translation = cameraStartTranslation});
@@ -83,7 +84,7 @@ void RenderSystem::Init() {
                                             .lookAt = vec3(0.0f, 50.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f),
                                             .dimensions = cameraDimensions});
-  gCoordinator.AddComponent(mCamera, AABB{.dimensions = cameraDimensions, .centered = true});
+  gCoordinator.AddComponent(mCamera, AABB{.dimensions = cameraDimensions, .isCamera = true});
   gCoordinator.AddComponent(
       mCamera,
       RigidBody{.velocity = vec3(0.0f, 0.0f, 0.0f), .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
