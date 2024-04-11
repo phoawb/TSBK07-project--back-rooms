@@ -72,8 +72,10 @@ Line BinarySpacePartitioner::GetLineDividingSpace(vec2 bottomLeftCorner, vec2 to
     orientation = rand() % 2 == 0 ? HORIZONTAL : VERTICAL;
   } else if (widthStatus) {
     orientation = VERTICAL;
-  } else {
+  } else if (heightStatus) {
     orientation = HORIZONTAL;
+  } else {
+    return Line(NONE, vec2(0, 0));
   }
 
   Line returnLine = Line(orientation, getCoordinatesForOrientation(orientation, bottomLeftCorner, topRightCorner,
@@ -85,6 +87,7 @@ void BinarySpacePartitioner::splitTheSpace(NodePtr currentNode, int minRoomWidth
   Line line =
       GetLineDividingSpace(currentNode->bottomLeftCorner, currentNode->topRightCorner, minRoomWidth, minRoomHeight);
   NodePtr node1, node2;
+  if (line.orientation == NONE) return;  // Early return if the line is not valid
   if (line.orientation == HORIZONTAL) {
     node1 =
         std::make_shared<Node>(currentNode->bottomLeftCorner, vec2(currentNode->topRightCorner.x, line.coordinates.y),
@@ -216,7 +219,8 @@ std::vector<NodePtr> MapGenerator::calculateMap(int maxIterations, int minRoomWi
   std::vector<NodePtr> roomSpaces = findLeafNodes(bsp.rootNode);
   RoomGenerator roomGenerator = RoomGenerator();
   std::vector<NodePtr> rooms = roomGenerator.generateRooms(roomSpaces);
-  return rooms;
+
+  return roomSpaces;
 };
 
 void MapCreator::start() { createMap(); }

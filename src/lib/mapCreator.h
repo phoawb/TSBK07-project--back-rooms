@@ -28,7 +28,7 @@ class Node : public std::enable_shared_from_this<Node>, public Transform, public
   int getHeight();
 };
 
-enum Orientation { HORIZONTAL, VERTICAL };
+enum Orientation { HORIZONTAL, VERTICAL, NONE };
 
 class Line {
  public:
