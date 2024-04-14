@@ -209,7 +209,7 @@ std::vector<NodePtr> RoomGenerator::generateRooms(std::vector<NodePtr> roomSpace
     roomSpace->topLeftCorner = vec2(newBottomLeftCorner.x, newTopRightCorner.y);
     rooms.push_back(roomSpace);
   }
-  return rooms;
+  return roomSpaces;
 };
 
 MapGenerator::MapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight){};
