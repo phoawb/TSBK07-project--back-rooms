@@ -195,13 +195,14 @@ std::vector<NodePtr> findLeafNodes(const NodePtr& rootNode) {
   return leafNodes;
 }
 
-std::vector<NodePtr> RoomGenerator::generateRooms(std::vector<NodePtr> roomSpaces, float pointModifier) {
+std::vector<NodePtr> RoomGenerator::generateRooms(std::vector<NodePtr> roomSpaces, float pointModifierBottom,
+                                                  float pointModifierTop, int offset) {
   std::vector<NodePtr> rooms;
   for (auto roomSpace : roomSpaces) {
-    vec2 newBottomLeftCorner =
-        generateBottomLeftCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, pointModifier, 1);
+    vec2 newBottomLeftCorner = generateBottomLeftCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner,
+                                                               pointModifierBottom, offset);
     vec2 newTopRightCorner =
-        generateTopRightCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, 1 - pointModifier, 1);
+        generateTopRightCornerBetween(roomSpace->bottomLeftCorner, roomSpace->topRightCorner, pointModifierTop, offset);
     roomSpace->bottomLeftCorner = newBottomLeftCorner;
     roomSpace->topRightCorner = newTopRightCorner;
     roomSpace->bottomRightCorner = vec2(newTopRightCorner.x, newBottomLeftCorner.y);
