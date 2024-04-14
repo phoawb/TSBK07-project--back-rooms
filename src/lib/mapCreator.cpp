@@ -229,7 +229,7 @@ void MapCreator::start() { createMap(); }
 void MapCreator::createMap() {
   MapGenerator mapGenerator(mapWidth, mapHeight);
   std::vector<NodePtr> map = mapGenerator.calculateMap(maxIterations, minRoomWidth, minRoomHeight);
-  for (auto room : map) {
+  for (NodePtr room : map) {
     createFloorModel(room->bottomLeftCorner, room->getWidth(), room->getHeight());
   }
 }
