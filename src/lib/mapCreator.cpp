@@ -220,7 +220,7 @@ std::vector<NodePtr> MapGenerator::calculateMap(int maxIterations, int minRoomWi
   RoomGenerator roomGenerator = RoomGenerator();
   std::vector<NodePtr> rooms = roomGenerator.generateRooms(roomSpaces);
 
-  return roomSpaces;
+  return rooms;
 };
 
 void MapCreator::start() { createMap(); }
