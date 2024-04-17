@@ -5,6 +5,7 @@
 #include "MicroGlut.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
+#include "components/Gravity.hpp"
 #include "components/Light.hpp"
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
@@ -12,7 +13,6 @@
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
 #include "genMap.h"
-#include "ground.h"
 #include "mapCreator.h"
 #include "systems/CameraControlSystem.hpp"
 #include "systems/CollisionSystem.hpp"
@@ -21,7 +21,6 @@
 #include "systems/RenderSystem.hpp"
 #include "vector"
 
-float GROUND_SIZE = 100;
 int WINDOW_SIZE = 600;
 
 GLfloat t;
@@ -50,7 +49,6 @@ void display(void) {
   lightingSystem->Update();
 
   printError("display");
-  glutSwapBuffers();
 }
 
 /// @brief Mouse callback function
@@ -64,7 +62,7 @@ void mouse(int x, int y) {
 }
 
 void createLightEntities() {
-  int lightCount = 4;
+  int lightCount = 6;
   for (int i = 0; i < lightCount; i++) {
     int randomX = rand() % 100 - 50;
     int randomY = rand() % 100 - 50;
@@ -78,12 +76,36 @@ void createLightEntities() {
 
 void spawnBall(mat4 startTrans, vec3 velocity) {
   auto groundSphere = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(groundSphere, Transform{.translation = startTrans, .rotation = Ry(0)});
+  gCoordinator.AddComponent(groundSphere, Transform{.translation = startTrans, .scale = S(1, 1, 1), .rotation = Ry(0)});
   gCoordinator.AddComponent(groundSphere,
                             RigidBody{.velocity = velocity, .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
   auto groundSphereModel = assetManager.getModel(ModelType::SPHERE);
   gCoordinator.AddComponent(groundSphere, Renderable{.model = groundSphereModel, .shader = TERRAIN, .texture = GRASS});
   gCoordinator.AddComponent(groundSphere, AABB{.dimensions = vec3(2, 2, 2)});
+  gCoordinator.AddComponent(groundSphere, Gravity{.acceleration = vec3(0.0f, -0.03f, 0.0f)});
+}
+
+void spawnCarton(mat4 startTrans, vec3 velocity) {
+  auto carton = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(carton, Transform{.translation = startTrans, .scale = S(0.1, 0.1, 0.1), .rotation = Ry(0)});
+  gCoordinator.AddComponent(carton,
+                            RigidBody{.velocity = velocity, .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
+  auto cartonModel = assetManager.getModel(ModelType::CARTON);
+  gCoordinator.AddComponent(carton, Renderable{.model = cartonModel, .shader = TERRAIN, .texture = CARTON_TEX});
+  gCoordinator.AddComponent(carton, AABB{.dimensions = vec3(2, 2, 2)});
+  gCoordinator.AddComponent(carton, Gravity{.acceleration = vec3(0.0f, -0.03f, 0.0f)});
+}
+
+void spawnChair(mat4 startTrans, vec3 velocity) {
+  auto chair = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(
+      chair, Transform{.translation = startTrans, .scale = S(20.0f, 20.0f, 20.0f), .rotation = Rz(2 * M_2_PI)});
+  gCoordinator.AddComponent(chair,
+                            RigidBody{.velocity = velocity, .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
+  auto chairModel = assetManager.getModel(ModelType::CHAIR);
+  gCoordinator.AddComponent(chair, Renderable{.model = chairModel, .shader = TERRAIN, .texture = TextureType::WHITE});
+  gCoordinator.AddComponent(chair, AABB{.dimensions = vec3(1, 1, 1), .isCentered = true});
+  gCoordinator.AddComponent(chair, Gravity{.acceleration = vec3(0.0f, -0.03f, 0.0f)});
 }
 
 int main(int argc, char** argv) {
@@ -103,6 +125,7 @@ int main(int argc, char** argv) {
   gCoordinator.RegisterComponent<Light>();
   gCoordinator.RegisterComponent<AABB>();
   gCoordinator.RegisterComponent<RigidBody>();
+  gCoordinator.RegisterComponent<Gravity>();
 
   cameraControlSystem = gCoordinator.RegisterSystem<CameraControlSystem>();
   {
@@ -110,6 +133,7 @@ int main(int argc, char** argv) {
     signature.set(gCoordinator.GetComponentType<Camera>());
     signature.set(gCoordinator.GetComponentType<Transform>());
     signature.set(gCoordinator.GetComponentType<RigidBody>());
+    signature.set(gCoordinator.GetComponentType<Gravity>());
     gCoordinator.SetSystemSignature<CameraControlSystem>(signature);
   }
 
@@ -118,6 +142,7 @@ int main(int argc, char** argv) {
     Signature signature;
     signature.set(gCoordinator.GetComponentType<Transform>());
     signature.set(gCoordinator.GetComponentType<RigidBody>());
+    signature.set(gCoordinator.GetComponentType<Gravity>());
     gCoordinator.SetSystemSignature<PhysicsSystem>(signature);
   }
   physicsSystem->Init();
@@ -155,18 +180,10 @@ int main(int argc, char** argv) {
   MapCreator mapCreator(1000, 1000, 50, 200, 200);
   mapCreator.start();
 
-  // fly up
-  spawnBall(T(-85, 5, 60), vec3(0.f, 0.2f, 0.0f));
-  spawnBall(T(-75, 5, 60), vec3(0.f, 0.2f, 0.0f));
-
-  // fly into each other
-  spawnBall(T(-85, 5, 50), vec3(0.2f, 0.0f, 0.f));
-  spawnBall(T(-75, 5, 50), vec3(-0.2f, 0.0f, 0.f));
-
-  auto ground = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(ground, Transform{.translation = T(0, 0, 0), .rotation = Ry(0)});
-  gCoordinator.AddComponent(
-      ground, Renderable{.model = getGroundModel(GROUND_SIZE), .shader = TERRAIN, .texture = OFFICE_FLOOR});
+  spawnBall(T(-95, 10, 50), vec3(0.f, 0.3f, 0.0f));
+  spawnBall(T(-85, 10, 50), vec3(0.f, 0.5f, 0.0f));
+  spawnChair(T(-75, 10, 50), vec3(0.f, 0.5f, 0.0f));
+  spawnCarton(T(-75, 10, 40), vec3(0.f, 0.5f, 0.0f));
 
   glutRepeatingTimer(20);
   glutPassiveMotionFunc(mouse);

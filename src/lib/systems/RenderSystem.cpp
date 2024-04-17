@@ -6,12 +6,12 @@
 #include "boxes.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
+#include "components/Gravity.hpp"
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
-#include "ground.h"
 
 extern Coordinator gCoordinator;
 extern AssetManager assetManager;
@@ -70,10 +70,11 @@ void RenderSystem::Init() {
   printf("Camera entity: %d\n", mCamera);
 
   // Camera Attributes
-  float cameraSide = 1;
-  // vec3 cameraStartPos = vec3(-85.0f, 50.0f, 80.0f);
-  mat4 cameraStartTranslation = T(-85.0f, 200.0f, 500.0f);
-  vec3 cameraDimensions = vec3(cameraSide, cameraSide, cameraSide);
+  float cameraSide = 3;
+  float cameraHeight = 9;
+  vec3 cameraStartPos = vec3(-85.0f, 10.0f, 80.0f);
+  mat4 cameraStartTranslation = T(-85.0f, 10.0f, 80.0f);
+  vec3 cameraDimensions = vec3(cameraSide, cameraHeight, cameraSide);
 
   // Add component to entity
   gCoordinator.AddComponent(mCamera, Transform{.translation = cameraStartTranslation});
@@ -83,10 +84,11 @@ void RenderSystem::Init() {
                                             .lookAt = vec3(0.0f, 50.0f, 0.0f),
                                             .cameraUp = vec3(0.0f, 1.0f, 0.0f),
                                             .dimensions = cameraDimensions});
-  gCoordinator.AddComponent(mCamera, AABB{.dimensions = cameraDimensions});
+  gCoordinator.AddComponent(mCamera, AABB{.dimensions = cameraDimensions, .isCamera = true});
   gCoordinator.AddComponent(
       mCamera,
       RigidBody{.velocity = vec3(0.0f, 0.0f, 0.0f), .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = false});
+  gCoordinator.AddComponent(mCamera, Gravity{.acceleration = vec3(0.0f, -0.03f, 0.0f)});
 
   printError("init RenderSystem");
 }
@@ -97,9 +99,10 @@ void RenderSystem::Update() {
     Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
     mat4 rot = gCoordinator.GetComponent<Transform>(entity).rotation;
+    mat4 scale = gCoordinator.GetComponent<Transform>(entity).scale;
     ShaderType shader = gCoordinator.GetComponent<Renderable>(entity).shader;
     TextureType texture = gCoordinator.GetComponent<Renderable>(entity).texture;
-    mat4 m2w = trans * rot;
+    mat4 m2w = trans * rot * scale;
     mat4 total = cameraMatrix * m2w;
     auto shaderId = assetManager.getShaderId(shader);
     int texUnit = assetManager.getTexId(texture);

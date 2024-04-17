@@ -12,10 +12,12 @@ enum TextureType {
   CONCRETE,
   OFFICE_CEILING,
   WHITE,
-  OFFWHITE
+  OFFWHITE,
+  BLACK,
+  CARTON_TEX
 };
 
-enum ModelType { SKYBOX, SPHERE };
+enum ModelType { SKYBOX, SPHERE, CHAIR, CARTON };
 
 enum TileType { EMPTY, PILLAR, LIGHT };
 enum RoomTypes { RAND_PILLARS };

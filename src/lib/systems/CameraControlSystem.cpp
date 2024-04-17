@@ -2,6 +2,7 @@
 
 #include "MicroGlut.h"
 #include "components/Camera.hpp"
+#include "components/Gravity.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
@@ -9,9 +10,18 @@
 extern Coordinator gCoordinator;
 
 bool mouseToggle = false;
+// shift for run
+bool prevShiftPressed = false;
+bool moveSpeedToggle = false;
+// space for jump
+bool velocityAdded = false;
+// g for gravity toggle
+bool prevGravityPressed = false;
+bool gravityOn = true;
 
 void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
-  const float moveSpeed = 2.0f;
+  float moveSpeed_xz;
+  const float moveSpeed_y = 0.1f;
   const float rotationSpeed = 0.05f;
   const float mouseSensitivity = 0.003f;
 
@@ -19,6 +29,7 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
     auto& camera = gCoordinator.GetComponent<Camera>(entity);
     auto& rigidBody = gCoordinator.GetComponent<RigidBody>(entity);
+    auto& gravity = gCoordinator.GetComponent<Gravity>(entity);
 
     vec3 cameraPosition = trans2pos(transform.translation);
 
@@ -36,11 +47,10 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     camera.theta = fmod(camera.theta, 2 * M_PI);  // fmax(0.f, fmod(theta, 2 * M_PI));
 
     // Ensure theta is within 0 to 2pi
-    if (camera.theta < 0) {
+    if (camera.theta < 0)
       camera.theta += 2 * M_PI;
-    } else if (camera.theta > 2 * M_PI) {
+    else if (camera.theta > 2 * M_PI)
       camera.theta -= 2 * M_PI;
-    }
 
     // Update camera position based on WASD keys
     vec3 forward = normalize(camera.lookAt - cameraPosition);    // Direction camera is facing
@@ -48,17 +58,34 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     forward = normalize(forward);                                // Normalize since we altered the length
     vec3 rightDir = normalize(cross(forward, camera.cameraUp));  // Right direction relative to camera's forward
 
-    rigidBody.velocity = vec3(0, 0, 0);
+    rigidBody.velocity.x = 0;
+    rigidBody.velocity.z = 0;
+
+    // Gravity toggle
+    bool currentGravityPressed = glutKeyIsDown('g');
+    if (currentGravityPressed && !prevGravityPressed) {
+      gravityOn = !gravityOn;
+    }
+    prevGravityPressed = currentGravityPressed;  // Update the state for the next frame
+    gravity.acceleration = gravityOn ? vec3(0.0f, -0.03f, 0.0f) : vec3(0.0f, 0.0f, 0.0f);
+
+    // Shift for run
+    bool currentShiftPressed = glutKeyIsDown(GLUT_KEY_SHIFT);
+    if (currentShiftPressed && !prevShiftPressed) {
+      moveSpeedToggle = !moveSpeedToggle;
+    }
+    moveSpeed_xz = moveSpeedToggle ? 1.0f : 0.7f;
+    prevShiftPressed = currentShiftPressed;  // Update the state for the next frame
 
     // Forward and backward
     if (glutKeyIsDown('w'))
-      rigidBody.velocity += forward * moveSpeed;
+      rigidBody.velocity += forward * moveSpeed_xz;
     else if (glutKeyIsDown('s'))
-      rigidBody.velocity -= forward * moveSpeed;
+      rigidBody.velocity -= forward * moveSpeed_xz;
 
     // Left and right
-    if (glutKeyIsDown('a')) rigidBody.velocity -= rightDir * moveSpeed;
-    if (glutKeyIsDown('d')) rigidBody.velocity += rightDir * moveSpeed;
+    if (glutKeyIsDown('a')) rigidBody.velocity -= rightDir * moveSpeed_xz;
+    if (glutKeyIsDown('d')) rigidBody.velocity += rightDir * moveSpeed_xz;
 
     if (glutKeyIsDown('m')) mouseToggle = !mouseToggle;
 
@@ -71,8 +98,17 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     if (glutKeyIsDown('i')) camera.phi += rotationSpeed;
     if (glutKeyIsDown('k')) camera.phi -= rotationSpeed;
 
-    if (glutKeyIsDown(GLUT_KEY_UP)) rigidBody.velocity.y += moveSpeed;
-    if (glutKeyIsDown(GLUT_KEY_DOWN)) rigidBody.velocity.y -= moveSpeed;
+    if (glutKeyIsDown(GLUT_KEY_UP) || glutKeyIsDown('q')) rigidBody.velocity.y += moveSpeed_y;
+    if (glutKeyIsDown(GLUT_KEY_DOWN) || glutKeyIsDown('e')) rigidBody.velocity.y -= moveSpeed_y;
+
+    if (glutKeyIsDown(GLUT_KEY_SPACE)) {
+      if (!velocityAdded) {
+        rigidBody.velocity.y = 0.5f;
+        velocityAdded = true;
+      }
+    } else {
+      velocityAdded = false;
+    }
 
     // mouse
     if (mouseToggle) {

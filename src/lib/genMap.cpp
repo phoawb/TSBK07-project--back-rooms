@@ -160,6 +160,15 @@ void createCeiling(BoxProps& props) {
   props.TextureScale.push_back(5);
 }
 
+void createGround(BoxProps& props) {
+  props.numBoxes += 1;
+  props.Positions.push_back({-1 * MAP_SIZE, -WALL_THICKNESS, -1 * MAP_SIZE});
+  props.Rotations.push_back(0);
+  props.Dimensions.push_back({MAP_SIZE * 2, WALL_THICKNESS, MAP_SIZE * 2});
+  props.TextureTypes.push_back(TextureType::OFFICE_FLOOR);
+  props.TextureScale.push_back(5);
+}
+
 void placeWallEnteties(BoxProps& props) {
   // printf("Placing walls\n");
   for (int i = 0; i < props.numBoxes; i++) {
@@ -194,6 +203,7 @@ void genMap() {
   createWall(11, 10, grid);
   grid2BoxProps(grid, props);
   createCeiling(props);
+  createGround(props);
 
   placeWallEnteties(props);
 
