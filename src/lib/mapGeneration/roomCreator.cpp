@@ -17,6 +17,15 @@ void createPillar(GLfloat world_x, GLfloat world_z, int pillarSize, int roomTall
   // moldings for the pillars
 }
 
+void createCeiling(int width, int height, int thickness) {
+  Model* ceilingModel = getBoxModel(width, thickness, height, 20);
+  auto ceiling = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(ceiling, Transform{.translation = T({0.f, MAP_TALLNESS, 0.f})});
+  gCoordinator.AddComponent(ceiling, Renderable{.model = ceilingModel, .shader = TERRAIN, .texture = OFFICE_CEILING});
+  gCoordinator.AddComponent(ceiling, AABB{.dimensions = vec3(width, thickness, height)});
+  gCoordinator.AddComponent(ceiling, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+}
+
 bool RoomCreator::isOccupied(std::vector<std::vector<TileType>>& grid, int x, int y) {
   if (grid[x][y] != TileType::EMPTY) return true;
   std::vector<vec2> directions = {{0, 1}, {0, -1}, {1, 0},  {-1, 0},  {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
