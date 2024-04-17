@@ -234,6 +234,11 @@ void MapCreator::createMap() {
     // createFloorModel(biome->bottomLeftCorner, biome->getWidth(), biome->getHeight());
     roomCreator.createRandPillarRoom(biome);
   }
+  float floorTallness = 4;
+  Model* floorModel = getBoxModel(mapWidth, floorTallness, mapHeight, 1);
+  auto floor = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(floor, Transform{.translation = T({0.f, -floorTallness, 0.f})});
+  gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
 }
 
 void MapCreator::createFloorModel(vec2 origin, int width, int height, TextureType textureType) {
