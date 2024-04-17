@@ -312,7 +312,6 @@ void RoomCreator::createRandPillarRoom(NodePtr room, int pillarSize, int roomTal
       if (grid[x][y] == PILLAR) {
         GLfloat world_x = roomY + y * pillarSize;
         GLfloat world_z = roomX + x * pillarSize;
-        printf("Creating pillar at (%f, %f)\n", world_x, world_z);
         Model* pillarModel = getBoxModel(pillarSize, roomTallness, pillarSize, 1);
         auto pillar = gCoordinator.CreateEntity();
         gCoordinator.AddComponent(pillar, Transform{.translation = T(world_x, 0, world_z)});
