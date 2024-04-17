@@ -14,7 +14,18 @@ void createPillar(GLfloat world_x, GLfloat world_z, int pillarSize, int roomTall
   gCoordinator.AddComponent(pillar, Renderable{.model = pillarModel, .shader = TERRAIN, .texture = OFFICE_WALL});
   gCoordinator.AddComponent(pillar, AABB{.dimensions = vec3(pillarSize, roomTallness, pillarSize)});
   gCoordinator.AddComponent(pillar, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
-  // moldings for the pillars
+  // moldings for the pillars (bot and top)
+  for (float m = 0.f; m <= MAP_TALLNESS - MOLDING_HEIGHT; m += MAP_TALLNESS - MOLDING_HEIGHT) {
+    Model* moldingModel =
+        getBoxModel(pillarSize + MOLDING_DEPTH * 2, MOLDING_HEIGHT, pillarSize + MOLDING_DEPTH * 2, 1);
+    auto molding = gCoordinator.CreateEntity();
+    gCoordinator.AddComponent(molding,
+                              Transform{.translation = T(world_x - MOLDING_DEPTH, m, world_z - MOLDING_DEPTH)});
+    gCoordinator.AddComponent(molding, Renderable{.model = moldingModel, .shader = TERRAIN, .texture = OFFWHITE});
+    gCoordinator.AddComponent(molding, AABB{.dimensions = vec3(pillarSize + MOLDING_DEPTH * 2, MOLDING_HEIGHT,
+                                                               pillarSize + MOLDING_DEPTH * 2)});
+    gCoordinator.AddComponent(molding, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+  }
 }
 
 void createCeiling(int width, int height, float thickness) {
