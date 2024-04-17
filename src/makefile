@@ -13,6 +13,7 @@ C_SOURCES = \
 $(COMMONDIR)GL_utilities.c \
 $(COMMONDIR)LoadTGA.c \
 $(COMMONDIR)/MicroGlut.m \
+$(COMMONDIR)/SimpleGUI.c \
 
 CPP_SOURCES = \
 $(LIBDIR)/boxes.cpp \
@@ -21,6 +22,7 @@ $(LIBDIR)/systems/RenderSystem.cpp \
 $(LIBDIR)/systems/LightingSystem.cpp \
 $(LIBDIR)/systems/CameraControlSystem.cpp \
 $(LIBDIR)/systems/CollisionSystem.cpp \
+$(LIBDIR)/systems/GuiSystem.cpp \
 $(LIBDIR)/systems/PhysicsSystem.cpp \
 $(LIBDIR)/genMap.cpp \
 $(LIBDIR)/mapCreator.cpp \

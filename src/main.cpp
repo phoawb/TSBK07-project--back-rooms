@@ -3,6 +3,7 @@
 #include "AssetManager.hpp"
 #include "GL_utilities.h"
 #include "MicroGlut.h"
+#include "SimpleGUI.h"
 #include "components/AABB.hpp"
 #include "components/Camera.hpp"
 #include "components/Gravity.hpp"
@@ -16,6 +17,7 @@
 #include "mapCreator.h"
 #include "systems/CameraControlSystem.hpp"
 #include "systems/CollisionSystem.hpp"
+#include "systems/GuiSystem.hpp"
 #include "systems/LightingSystem.hpp"
 #include "systems/PhysicsSystem.hpp"
 #include "systems/RenderSystem.hpp"
@@ -29,6 +31,7 @@ std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
 std::__1::shared_ptr<LightingSystem> lightingSystem;
 std::__1::shared_ptr<CollisionSystem> collisionSystem;
 std::__1::shared_ptr<PhysicsSystem> physicsSystem;
+std::__1::shared_ptr<GuiSystem> guiSystem;
 
 Coordinator gCoordinator;
 AssetManager assetManager;
@@ -45,7 +48,7 @@ void display(void) {
   physicsSystem->Update();
   collisionSystem->Update();
   renderSystem->Update();
-
+  guiSystem->Update();
   lightingSystem->Update();
 
   printError("display");
@@ -126,6 +129,15 @@ int main(int argc, char** argv) {
   gCoordinator.RegisterComponent<AABB>();
   gCoordinator.RegisterComponent<RigidBody>();
   gCoordinator.RegisterComponent<Gravity>();
+
+  guiSystem = gCoordinator.RegisterSystem<GuiSystem>();
+  {
+    Signature signature;
+    signature.set(gCoordinator.GetComponentType<Transform>());
+    signature.set(gCoordinator.GetComponentType<Camera>());
+    gCoordinator.SetSystemSignature<GuiSystem>(signature);
+  }
+  guiSystem->Init();
 
   cameraControlSystem = gCoordinator.RegisterSystem<CameraControlSystem>();
   {
