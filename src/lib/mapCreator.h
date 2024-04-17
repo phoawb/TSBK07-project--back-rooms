@@ -8,6 +8,7 @@
 #include "VectorUtils4.h"
 #include "components/Renderable.hpp"
 #include "components/Transform.hpp"
+#include "core/Enums.hpp"
 
 const int MAP_TALLNESS = 25;
 
@@ -88,9 +89,6 @@ class MapCreator {
   void createMap();
   void createFloorModel(vec2 origin, int width, int height, TextureType textureType = OFFICE_FLOOR);
 };
-
-enum TileType { EMPTY, PILLAR, LIGHT };
-enum RoomTypes { RAND_PILLARS };
 
 class RoomCreator {
  public:

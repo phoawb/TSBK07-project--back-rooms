@@ -16,3 +16,6 @@ enum TextureType {
 };
 
 enum ModelType { SKYBOX, SPHERE };
+
+enum TileType { EMPTY, PILLAR, LIGHT };
+enum RoomTypes { RAND_PILLARS };
