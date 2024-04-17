@@ -8,7 +8,9 @@
 #include "VectorUtils4.h"
 #include "algorithm"
 #include "boxes.h"
+#include "components/AABB.hpp"
 #include "components/Renderable.hpp"
+#include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
 #include "core/Coordinator.hpp"
 #include "random"
@@ -234,11 +236,23 @@ void MapCreator::createMap() {
     // createFloorModel(biome->bottomLeftCorner, biome->getWidth(), biome->getHeight());
     roomCreator.createRandPillarRoom(biome);
   }
-  float floorTallness = 4;
-  Model* floorModel = getBoxModel(mapWidth, floorTallness, mapHeight, 1);
+
+  // create floor
+  float floorAndCeilingThickness = 4;
+  Model* floorModel = getBoxModel(mapWidth, floorAndCeilingThickness, mapHeight, 1);
   auto floor = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(floor, Transform{.translation = T({0.f, -floorTallness, 0.f})});
+  gCoordinator.AddComponent(floor, Transform{.translation = T({0.f, -floorAndCeilingThickness, 0.f})});
   gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
+  gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(mapWidth, floorAndCeilingThickness, mapHeight)});
+  gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+
+  // create ceiling
+  Model* ceilingModel = getBoxModel(mapWidth, floorAndCeilingThickness, mapHeight, 20);
+  auto ceiling = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(ceiling, Transform{.translation = T({0.f, MAP_TALLNESS, 0.f})});
+  gCoordinator.AddComponent(ceiling, Renderable{.model = ceilingModel, .shader = TERRAIN, .texture = OFFICE_CEILING});
+  gCoordinator.AddComponent(ceiling, AABB{.dimensions = vec3(mapWidth, floorAndCeilingThickness, mapHeight)});
+  gCoordinator.AddComponent(ceiling, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
 }
 
 void MapCreator::createFloorModel(vec2 origin, int width, int height, TextureType textureType) {
@@ -248,11 +262,6 @@ void MapCreator::createFloorModel(vec2 origin, int width, int height, TextureTyp
   gCoordinator.AddComponent(floor, Transform{.translation = T(origin.y, 0, origin.x),
                                              Ry(0)});  // we define the floor's origin at the bottom left corner
   gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = textureType});
-
-  /*   Model* pillarModel = getBoxModel(10.f, 25.f, 10.f, 1);
-    auto pillar = gCoordinator.CreateEntity();
-    gCoordinator.AddComponent(pillar, Transform{.translation = T(origin.y + 10, 0, origin.x + 10), Ry(0)});
-    gCoordinator.AddComponent(pillar, Renderable{.model = pillarModel, .shader = TERRAIN, .texture = OFFICE_WALL}); */
 }
 
 bool RoomCreator::isOccupied(std::vector<std::vector<TileType>>& grid, int x, int y) {
@@ -308,6 +317,8 @@ void RoomCreator::createRandPillarRoom(NodePtr room, int pillarSize, int roomTal
         auto pillar = gCoordinator.CreateEntity();
         gCoordinator.AddComponent(pillar, Transform{.translation = T(world_x, 0, world_z)});
         gCoordinator.AddComponent(pillar, Renderable{.model = pillarModel, .shader = TERRAIN, .texture = OFFICE_WALL});
+        gCoordinator.AddComponent(pillar, AABB{.dimensions = vec3(pillarSize, roomTallness, pillarSize)});
+        gCoordinator.AddComponent(pillar, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
         // moldings for the pillars
       }
     }
