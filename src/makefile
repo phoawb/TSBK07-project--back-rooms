@@ -14,20 +14,11 @@ $(COMMONDIR)GL_utilities.c \
 $(COMMONDIR)LoadTGA.c \
 $(COMMONDIR)/MicroGlut.m \
 
-CPP_SOURCES = \
-$(LIBDIR)/boxes.cpp \
-$(LIBDIR)/AssetManager.cpp \
-$(LIBDIR)/systems/RenderSystem.cpp \
-$(LIBDIR)/systems/LightingSystem.cpp \
-$(LIBDIR)/systems/CameraControlSystem.cpp \
-$(LIBDIR)/systems/CollisionSystem.cpp \
-$(LIBDIR)/systems/PhysicsSystem.cpp \
-$(LIBDIR)/genMap.cpp \
-$(LIBDIR)/mapCreator.cpp \
+CPP_SOURCES = $(shell find $(LIBDIR) -type f -name '*.cpp')
 
 # Object files
 C_OBJECTS := $(C_SOURCES:.c=.o)
-CPP_OBJECTS := $(CPP_SOURCES:.cpp=.o)
+CPP_OBJECTS := $(CPP_LIBSOURCES:.cpp=.o)
 
 main: main.o $(C_OBJECTS) $(CPP_OBJECTS)
 	$(CXX) -o main main.o $(C_OBJECTS) $(CPP_OBJECTS) $(LDFLAGS)
