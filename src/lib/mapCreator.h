@@ -9,6 +9,8 @@
 #include "components/Renderable.hpp"
 #include "components/Transform.hpp"
 
+const int MAP_TALLNESS = 25;
+
 class Node;
 typedef std::shared_ptr<Node> NodePtr;
 typedef std::weak_ptr<Node> WeakNodePtr;
@@ -85,6 +87,18 @@ class MapCreator {
   void start();
   void createMap();
   void createFloorModel(vec2 origin, int width, int height, TextureType textureType = OFFICE_FLOOR);
+};
+
+enum TileType { EMPTY, PILLAR, LIGHT };
+enum RoomTypes { RAND_PILLARS };
+
+class RoomCreator {
+ public:
+  RoomCreator(){};  // default constructor
+  void createRandPillarRoom(NodePtr room, int pillarSize = 10, int roomTallness = MAP_TALLNESS);
+
+ private:
+  bool isOccupied(std::vector<std::vector<TileType>>& grid, int x, int y);
 };
 
 #endif  // MAPGENERATOR_H
