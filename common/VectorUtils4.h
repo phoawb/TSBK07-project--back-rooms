@@ -208,6 +208,20 @@ typedef struct vec2 {
 #endif
 } vec2, *vec2Ptr;
 
+// more ergonomic for world coordinates that from some reason have the z-axis as the horizontal axis and x-axis as the
+// vertical axis
+typedef struct worldVec2 {
+  //		GLfloat z, x;
+  GLfloat z;
+  GLfloat x;
+#ifdef __cplusplus
+  worldVec2() {}
+  worldVec2(GLfloat z2, GLfloat x2) : z(z2), x(x2) {}
+  worldVec2(vec2 v) : z(v.x), x(v.y) {}
+  worldVec2(vec3 v) : z(v.x), x(v.z) {}
+#endif
+} worldVec2, *worldVec2Ptr;
+
 typedef struct mat3 mat3;
 typedef struct mat4 {
   GLfloat m[16];
@@ -416,6 +430,18 @@ mat3 transpose(mat3 m);
 mat4 S(GLfloat s);
 mat4 S(vec3 s);
 mat4 lookAt(vec3 p, vec3 l, vec3 u);
+#endif
+
+#ifdef __cplusplus
+inline vec2 operator+(const vec2 &a, const vec2 &b)  // vec2+vec2
+{
+  return SetVec2(a.x + b.x, a.y + b.y);
+}
+
+inline vec2 operator/(const vec2 &b, double a)  // vec2 / scalar
+{
+  return SetVec2(b.x / a, b.y / a);
+}
 #endif
 
 // #ifdef __cplusplus

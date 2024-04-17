@@ -2,9 +2,9 @@
 
 #include "MicroGlut.h"
 #include "components/Camera.hpp"
+#include "components/Gravity.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
-#include "components/Gravity.hpp"
 #include "core/Coordinator.hpp"
 
 extern Coordinator gCoordinator;
@@ -66,16 +66,16 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     if (currentGravityPressed && !prevGravityPressed) {
       gravityOn = !gravityOn;
     }
-    prevGravityPressed = currentGravityPressed; // Update the state for the next frame
+    prevGravityPressed = currentGravityPressed;  // Update the state for the next frame
     gravity.acceleration = gravityOn ? vec3(0.0f, -0.03f, 0.0f) : vec3(0.0f, 0.0f, 0.0f);
 
     // Shift for run
     bool currentShiftPressed = glutKeyIsDown(GLUT_KEY_SHIFT);
     if (currentShiftPressed && !prevShiftPressed) {
-        moveSpeedToggle = !moveSpeedToggle;
+      moveSpeedToggle = !moveSpeedToggle;
     }
     moveSpeed_xz = moveSpeedToggle ? 1.0f : 0.7f;
-    prevShiftPressed = currentShiftPressed; // Update the state for the next frame
+    prevShiftPressed = currentShiftPressed;  // Update the state for the next frame
 
     // Forward and backward
     if (glutKeyIsDown('w'))
@@ -109,7 +109,6 @@ void CameraControlSystem::Update(int deltaMouseX, int deltaMouseY) {
     } else {
       velocityAdded = false;
     }
-
 
     // mouse
     if (mouseToggle) {

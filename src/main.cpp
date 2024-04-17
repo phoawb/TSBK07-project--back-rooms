@@ -13,6 +13,7 @@
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
 #include "genMap.h"
+#include "mapCreator.h"
 #include "systems/CameraControlSystem.hpp"
 #include "systems/CollisionSystem.hpp"
 #include "systems/LightingSystem.hpp"
@@ -175,7 +176,9 @@ int main(int argc, char** argv) {
   createLightEntities();
   lightingSystem->Init();
 
-  genMap();
+  // genMap();
+  MapCreator mapCreator(1000, 1000, 50, 200, 200);
+  mapCreator.start();
 
   spawnBall(T(-95, 10, 50), vec3(0.f, 0.3f, 0.0f));
   spawnBall(T(-85, 10, 50), vec3(0.f, 0.5f, 0.0f));

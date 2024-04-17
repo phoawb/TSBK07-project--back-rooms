@@ -23,6 +23,7 @@ $(LIBDIR)/systems/CameraControlSystem.cpp \
 $(LIBDIR)/systems/CollisionSystem.cpp \
 $(LIBDIR)/systems/PhysicsSystem.cpp \
 $(LIBDIR)/genMap.cpp \
+$(LIBDIR)/mapCreator.cpp \
 
 # Object files
 C_OBJECTS := $(C_SOURCES:.c=.o)
