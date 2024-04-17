@@ -18,7 +18,7 @@ CPP_SOURCES = $(shell find $(LIBDIR) -type f -name '*.cpp')
 
 # Object files
 C_OBJECTS := $(C_SOURCES:.c=.o)
-CPP_OBJECTS := $(CPP_LIBSOURCES:.cpp=.o)
+CPP_OBJECTS := $(CPP_SOURCES:.cpp=.o)
 
 main: main.o $(C_OBJECTS) $(CPP_OBJECTS)
 	$(CXX) -o main main.o $(C_OBJECTS) $(CPP_OBJECTS) $(LDFLAGS)
