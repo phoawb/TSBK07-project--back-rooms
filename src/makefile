@@ -13,6 +13,7 @@ C_SOURCES = \
 $(COMMONDIR)GL_utilities.c \
 $(COMMONDIR)LoadTGA.c \
 $(COMMONDIR)/MicroGlut.m \
+$(COMMONDIR)/SimpleGUI.c \
 
 CPP_SOURCES = $(shell find $(LIBDIR) -type f -name '*.cpp')
 
