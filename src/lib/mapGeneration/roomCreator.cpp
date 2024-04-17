@@ -7,6 +7,16 @@
 
 extern Coordinator gCoordinator;
 
+void createPillar(GLfloat world_x, GLfloat world_z, int pillarSize, int roomTallness) {
+  Model* pillarModel = getBoxModel(pillarSize, roomTallness, pillarSize, 1);
+  auto pillar = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(pillar, Transform{.translation = T(world_x, 0, world_z)});
+  gCoordinator.AddComponent(pillar, Renderable{.model = pillarModel, .shader = TERRAIN, .texture = OFFICE_WALL});
+  gCoordinator.AddComponent(pillar, AABB{.dimensions = vec3(pillarSize, roomTallness, pillarSize)});
+  gCoordinator.AddComponent(pillar, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+  // moldings for the pillars
+}
+
 bool RoomCreator::isOccupied(std::vector<std::vector<TileType>>& grid, int x, int y) {
   if (grid[x][y] != TileType::EMPTY) return true;
   std::vector<vec2> directions = {{0, 1}, {0, -1}, {1, 0},  {-1, 0},  {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
@@ -55,13 +65,7 @@ void RoomCreator::createRandPillarRoom(NodePtr room, int pillarSize, int roomTal
       if (grid[x][y] == PILLAR) {
         GLfloat world_x = roomY + y * pillarSize;
         GLfloat world_z = roomX + x * pillarSize;
-        Model* pillarModel = getBoxModel(pillarSize, roomTallness, pillarSize, 1);
-        auto pillar = gCoordinator.CreateEntity();
-        gCoordinator.AddComponent(pillar, Transform{.translation = T(world_x, 0, world_z)});
-        gCoordinator.AddComponent(pillar, Renderable{.model = pillarModel, .shader = TERRAIN, .texture = OFFICE_WALL});
-        gCoordinator.AddComponent(pillar, AABB{.dimensions = vec3(pillarSize, roomTallness, pillarSize)});
-        gCoordinator.AddComponent(pillar, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
-        // moldings for the pillars
+        createPillar(world_x, world_z, pillarSize, roomTallness);
       }
     }
   }

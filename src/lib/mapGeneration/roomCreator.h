@@ -10,3 +10,5 @@ class RoomCreator {
  private:
   bool isOccupied(std::vector<std::vector<TileType>>& grid, int x, int y);
 };
+
+void createPillar(GLfloat world_x, GLfloat world_z, int pillarSize, int roomTallness);
