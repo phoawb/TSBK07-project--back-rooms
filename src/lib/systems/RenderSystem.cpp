@@ -72,8 +72,7 @@ void RenderSystem::Init() {
   // Camera Attributes
   float cameraSide = 3;
   float cameraHeight = 9;
-  vec3 cameraStartPos = vec3(-85.0f, 10.0f, 80.0f);
-  mat4 cameraStartTranslation = T(-85.0f, 10.0f, 80.0f);
+  mat4 cameraStartTranslation = T(50.0f, 10.0f, 50.0f);
   vec3 cameraDimensions = vec3(cameraSide, cameraHeight, cameraSide);
 
   // Add component to entity
