@@ -1,5 +1,4 @@
-#ifndef MAPCREATOR_H
-#define MAPCREATOR_H
+#pragma once
 
 #include <memory>
 #include <queue>
@@ -15,14 +14,6 @@
 const int MAP_TALLNESS = 25;
 
 std::vector<NodePtr> findLeafNodes(const NodePtr& rootNode);
-
-class RoomGenerator {
- public:
-  RoomGenerator(){};  // default constructor
-
-  std::vector<NodePtr> generateRooms(std::vector<NodePtr> roomSpaces, float pointModifierBottom = 0.1,
-                                     float pointModifierTop = 0.9, int offset = 1);
-};
 
 class MapGenerator {
  public:
@@ -58,5 +49,3 @@ class RoomCreator {
  private:
   bool isOccupied(std::vector<std::vector<TileType>>& grid, int x, int y);
 };
-
-#endif  // MAPGENERATOR_H
