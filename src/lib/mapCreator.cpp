@@ -37,13 +37,7 @@ void MapCreator::createMap() {
 
   // create floor
   float floorAndCeilingThickness = 4;
-  Model* floorModel = getBoxModel(mapWidth, floorAndCeilingThickness, mapHeight, 1);
-  auto floor = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(floor, Transform{.translation = T({0.f, -floorAndCeilingThickness, 0.f})});
-  gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
-  gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(mapWidth, floorAndCeilingThickness, mapHeight)});
-  gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
-
+  createFloor(mapWidth, mapHeight, floorAndCeilingThickness);
   // create ceiling
   createCeiling(mapWidth, mapHeight, floorAndCeilingThickness);
 }

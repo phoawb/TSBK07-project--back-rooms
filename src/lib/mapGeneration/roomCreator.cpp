@@ -17,13 +17,22 @@ void createPillar(GLfloat world_x, GLfloat world_z, int pillarSize, int roomTall
   // moldings for the pillars
 }
 
-void createCeiling(int width, int height, int thickness) {
+void createCeiling(int width, int height, float thickness) {
   Model* ceilingModel = getBoxModel(width, thickness, height, 20);
   auto ceiling = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(ceiling, Transform{.translation = T({0.f, MAP_TALLNESS, 0.f})});
   gCoordinator.AddComponent(ceiling, Renderable{.model = ceilingModel, .shader = TERRAIN, .texture = OFFICE_CEILING});
   gCoordinator.AddComponent(ceiling, AABB{.dimensions = vec3(width, thickness, height)});
   gCoordinator.AddComponent(ceiling, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+}
+
+void createFloor(int width, int height, float thickness) {
+  Model* floorModel = getBoxModel(width, thickness, height, 1);
+  auto floor = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(floor, Transform{.translation = T({0.f, -thickness, 0.f})});
+  gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
+  gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(width, thickness, height)});
+  gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
 }
 
 bool RoomCreator::isOccupied(std::vector<std::vector<TileType>>& grid, int x, int y) {
