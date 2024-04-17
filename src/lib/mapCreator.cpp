@@ -18,14 +18,6 @@
 
 extern Coordinator gCoordinator;
 
-// vec2 is mostly used for texture cordinates, so I havn't bothered defining any operations for it
-/* typedef struct vec2 {
-  int x, y;
-  vec2() {}
-  vec2(int x2, int y2) : x(x2), y(y2) {}
-  bool operator==(const vec2& other) const { return x == other.x && y == other.y; }
-} vec2, *vec2_ptr; */
-
 int randRange(int min, int max) {
   if (min > max) std::swap(min, max);
   if (min == max) return min;
