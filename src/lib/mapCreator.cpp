@@ -49,4 +49,7 @@ void MapCreator::createFloorModel(vec2 origin, int width, int height, TextureTyp
   gCoordinator.AddComponent(floor, Transform{.translation = T(origin.y, 0, origin.x),
                                              Ry(0)});  // we define the floor's origin at the bottom left corner
   gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = textureType});
+  gCoordinator.AddComponent(
+      floor, RigidBody{.velocity = vec3(0.0f, 0.0f, 0.0f), .acceleration = vec3(0.0f, 0.0f, 0.0f), .isStatic = true});
+  gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(width, 4, height), .isCamera = false});
 }
