@@ -21,6 +21,11 @@ void GuiSystem::Init() {
   sgCreateDisplayFloat(-1, -1, "Camera x: ", &cameraX);
   sgCreateDisplayFloat(-1, -1, "Camera y: ", &cameraY);
   sgCreateDisplayFloat(-1, -1, "Camera z: ", &cameraZ);
+  sgCreateDisplayFloat(-1, -1, "ms per frame: ", &msPerFrame);
+  sgCreateDisplayFloat(-1, -1, "fps: ", &fps);
+  // Fps variables init
+  float lastTime = (float)glutGet(GLUT_ELAPSED_TIME);
+  int nbFrames = 0;
   printError("init GuiSystem");
 }
 
@@ -33,6 +38,16 @@ void GuiSystem::Update() {
     cameraX = transform.translation.m[3];
     cameraY = transform.translation.m[7];
     cameraZ = transform.translation.m[11];
+  }
+  // measure performance
+  float currentTime = (float)glutGet(GLUT_ELAPSED_TIME);
+  nbFrames++;
+  if (currentTime - lastTime >= 1000.0) {
+    // Printf and reset timer
+    msPerFrame = 1000.0 / double(nbFrames);
+    fps = double(nbFrames);
+    nbFrames = 0;
+    lastTime = currentTime;
   }
   sgDraw();
 }
