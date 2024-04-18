@@ -24,8 +24,8 @@ void GuiSystem::Init() {
   sgCreateDisplayFloat(-1, -1, "ms per frame: ", &msPerFrame);
   sgCreateDisplayFloat(-1, -1, "fps: ", &fps);
   // Fps variables init
-  float lastTime = (float)glutGet(GLUT_ELAPSED_TIME);
-  int nbFrames = 0;
+  lastTime = (float)glutGet(GLUT_ELAPSED_TIME);
+  nbFrames = 0;
   printError("init GuiSystem");
 }
 
