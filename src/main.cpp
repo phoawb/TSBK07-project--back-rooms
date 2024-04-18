@@ -25,7 +25,6 @@
 
 int WINDOW_SIZE = 600;
 
-GLfloat t;
 std::__1::shared_ptr<RenderSystem> renderSystem;
 std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
 std::__1::shared_ptr<LightingSystem> lightingSystem;
