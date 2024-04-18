@@ -39,13 +39,30 @@ void createCeiling(int width, int height, float thickness) {
   gCoordinator.AddComponent(ceiling, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
 }
 
-void createFloor(int width, int height, float thickness) {
-  Model* floorModel = getBoxModel(width, thickness, height, 1);
-  auto floor = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(floor, Transform{.translation = T({0.f, -thickness, 0.f})});
-  gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
-  gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(width, thickness, height)});
-  gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+void createFloor(int mapWidth, int mapHeight, float thickness, int tileScale) {
+  printf("Creating floor\n");
+  printf("Map width: %d, map height: %d, thickness: %f, tile scale: %d\n", mapWidth, mapHeight, thickness, tileScale);
+  int floorWidth = mapWidth / tileScale;
+  int floorHeight = mapHeight / tileScale;
+
+  for (int x = 0; x < tileScale; x++) {
+    for (int z = 0; z < tileScale; z++) {
+      Model* floorModel = getBoxModel(floorHeight, thickness, floorWidth, 1);
+      auto floor = gCoordinator.CreateEntity();
+      gCoordinator.AddComponent(floor, Transform{.translation = T({static_cast<GLfloat>(x * floorHeight), -thickness,
+                                                                   static_cast<GLfloat>(z * floorWidth)})});
+      gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
+      gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(floorHeight, thickness, floorWidth)});
+      gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+    }
+  }
+
+  /*   Model* floorModel = getBoxModel(width, thickness, height, 1);
+    auto floor = gCoordinator.CreateEntity();
+    gCoordinator.AddComponent(floor, Transform{.translation = T({0.f, -thickness, 0.f})});
+    gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
+    gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(width, thickness, height)});
+    gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)}); */
 }
 
 void createLight(GLfloat world_x, GLfloat world_z, int width, int height, float thickness) {

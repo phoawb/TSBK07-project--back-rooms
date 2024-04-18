@@ -13,5 +13,5 @@ class RoomCreator {
 
 void createPillar(GLfloat world_x, GLfloat world_z, int pillarSize, int roomTallness);
 void createCeiling(int width, int height, float thickness);
-void createFloor(int width, int height, float thickness);
+void createFloor(int mapWidth, int mapHeight, float thickness, int tileScale = 10);
 void createLight(GLfloat world_x, GLfloat world_z, int width = 5, int height = 5, float thickness = 0.5);
