@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
   lightingSystem->Init();
 
   // genMap();
-  MapCreator mapCreator(1000, 1000, 50, 150, 150);
+  MapCreator mapCreator(1000, 1000, 60, MIN_ROOM_SIZE, MIN_ROOM_SIZE);
   mapCreator.start();
 
   spawnBall(T(-95, 10, 50), vec3(0.f, 0.3f, 0.0f));
