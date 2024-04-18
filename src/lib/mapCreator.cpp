@@ -12,7 +12,6 @@
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
-#include "core/Constants.hpp"
 #include "core/Coordinator.hpp"
 #include "mapGeneration/BinarySpacePartitioner.h"
 #include "mapGeneration/mapGenerator.h"
@@ -36,10 +35,11 @@ void MapCreator::createMap() {
   }
 
   // create floor
-  float floorAndCeilingThickness = 4;
-  createFloor(mapWidth, mapHeight, floorAndCeilingThickness);
+  float floorThickness = 4;
+  createFloor(mapWidth, mapHeight, floorThickness);
   // create ceiling
-  createCeiling(mapWidth, mapHeight, floorAndCeilingThickness);
+  float ceilingThickness = 4;
+  createCeiling(mapWidth, mapHeight, ceilingThickness);
 }
 
 void MapCreator::createFloorModel(vec2 origin, int width, int height, TextureType textureType) {
