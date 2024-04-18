@@ -54,12 +54,22 @@ void RenderSystem::drawSkybox() {
   glEnable(GL_CULL_FACE);
 }
 
+bool RenderSystem::isOutsideRenderDistance(mat4 trans) {
+  vec3 position = trans2pos(trans);
+  vec3 cameraPos = trans2pos(gCoordinator.GetComponent<Transform>(mCamera).translation);
+  float distance2FromCamera = (cameraPos.x - position.x) * (cameraPos.x - position.x) +
+                              (cameraPos.y - position.y) * (cameraPos.y - position.y) +
+                              (cameraPos.z - position.z) * (cameraPos.z - position.z);
+  return (renderDistance * renderDistance < distance2FromCamera);
+}
+
 void RenderSystem::Init() {
   glClearColor(0.2, 0.2, 0.5, 0);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   printError("GL inits");
 
+  renderDistance = 500.0f;
   float far = 1000.0f;
   float near = 0.2f;
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, near, far);
@@ -97,6 +107,9 @@ void RenderSystem::Update() {
   for (auto &entity : mEntities) {
     Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
+    if (isOutsideRenderDistance(trans)) {
+      continue;
+    }
     mat4 rot = gCoordinator.GetComponent<Transform>(entity).rotation;
     mat4 scale = gCoordinator.GetComponent<Transform>(entity).scale;
     ShaderType shader = gCoordinator.GetComponent<Renderable>(entity).shader;
