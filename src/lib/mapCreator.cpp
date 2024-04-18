@@ -30,8 +30,14 @@ void MapCreator::createMap() {
   std::vector<NodePtr> map = mapGenerator.calculateMap(maxIterations, minRoomWidth, minRoomHeight);
   RoomCreator roomCreator = RoomCreator();
   for (NodePtr biome : map) {
+    int prob = randRange(0, 100);
     // createFloorModel(biome->bottomLeftCorner, biome->getWidth(), biome->getHeight());
-    roomCreator.createRandPillarRoom(biome);
+    if (prob < 15) {
+      // printf("Creating Pillar Room\n");
+      roomCreator.createRandPillarRoom(biome);
+    } else {
+      roomCreator.createOfficeRoom(biome);
+    }
   }
 
   // create floor
