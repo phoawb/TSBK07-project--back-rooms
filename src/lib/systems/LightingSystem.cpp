@@ -12,7 +12,6 @@ void LightingSystem::Init() {};
 
 void LightingSystem::Update() {
   // random number between 0 and 1
-  float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
   // printf("random: %f\n", random);
   int lightCount = mEntities.size();
   vec3 lightSourcesColors[lightCount];
@@ -22,7 +21,7 @@ void LightingSystem::Update() {
   for (auto const& entity : mEntities) {
     auto& light = gCoordinator.GetComponent<Light>(entity);
     auto& transform = gCoordinator.GetComponent<Transform>(entity);
-    lightSourcesColors[i] = random < 0.99 ? light.color : vec3(0, 0, 0);
+    lightSourcesColors[i] = light.color;
     vec3 lightSourcePos = vec3(transform.translation.m[3], transform.translation.m[7], transform.translation.m[11]);
     lightSourcesDirPos[i] = lightSourcePos;
     isDirectional[i] = light.isDirectional;
