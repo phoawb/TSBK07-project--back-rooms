@@ -124,7 +124,7 @@ void RoomCreator::createRandPillarRoom(NodePtr room, int pillarSize, int roomTal
   srand(time(NULL));
 
   int maxPillars = gridWidth * gridHeight;
-  int maxLights = 7;
+  int maxLights = 5;
   int maxFailedTries = 1000;
   int failedTries = 0;
   int placedPillars = 0;
