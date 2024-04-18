@@ -64,19 +64,6 @@ void mouse(int x, int y) {
   lastMouseY = y;
 }
 
-void createLightEntities() {
-  int lightCount = 6;
-  for (int i = 0; i < lightCount; i++) {
-    int randomX = rand() % 100 - 50;
-    int randomY = rand() % 100 - 50;
-    vec3 color = vec3(1.0, 1.0, 1.0);
-    mat4 trans = T(randomX, 25, randomY);
-    auto lightEntity = gCoordinator.CreateEntity();
-    gCoordinator.AddComponent(lightEntity, Transform{.translation = trans});
-    gCoordinator.AddComponent(lightEntity, Light{.color = color, .shader = TERRAIN});
-  }
-}
-
 void spawnBall(mat4 startTrans, vec3 velocity) {
   auto groundSphere = gCoordinator.CreateEntity();
   gCoordinator.AddComponent(groundSphere, Transform{.translation = startTrans, .scale = S(1, 1, 1), .rotation = Ry(0)});
@@ -185,7 +172,6 @@ int main(int argc, char** argv) {
     signature.set(gCoordinator.GetComponentType<Transform>());
     gCoordinator.SetSystemSignature<LightingSystem>(signature);
   }
-  createLightEntities();
   lightingSystem->Init();
 
   // genMap();
