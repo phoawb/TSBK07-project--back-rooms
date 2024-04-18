@@ -11,6 +11,7 @@
 #include "components/Renderable.hpp"
 #include "components/RigidBody.hpp"
 #include "components/Transform.hpp"
+#include "core/Constants.hpp"
 #include "core/Coordinator.hpp"
 #include "core/Enums.hpp"
 #include "genMap.h"
@@ -177,12 +178,12 @@ int main(int argc, char** argv) {
   MapCreator mapCreator(1000, 1000, 60, MIN_ROOM_SIZE, MIN_ROOM_SIZE);
   mapCreator.start();
 
-  spawnBall(T(-95, 10, 50), vec3(0.f, 0.3f, 0.0f));
+  /* spawnBall(T(-95, 10, 50), vec3(0.f, 0.3f, 0.0f));
   spawnBall(T(-85, 10, 50), vec3(0.f, 0.5f, 0.0f));
   spawnChair(T(-75, 10, 50), vec3(0.f, 0.5f, 0.0f));
-  spawnCarton(T(-75, 10, 40), vec3(0.f, 0.5f, 0.0f));
+  spawnCarton(T(-75, 10, 40), vec3(0.f, 0.5f, 0.0f)); */
 
-  glutRepeatingTimer(20);
+  glutRepeatingTimer(3);
   glutPassiveMotionFunc(mouse);
   glutMainLoop();
   exit(0);
