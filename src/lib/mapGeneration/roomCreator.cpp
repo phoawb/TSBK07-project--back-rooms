@@ -30,39 +30,53 @@ void createPillar(GLfloat world_x, GLfloat world_z, int pillarSize, int roomTall
   }
 }
 
-void createCeiling(int width, int height, float thickness) {
-  Model* ceilingModel = getBoxModel(width, thickness, height, 25);
-  auto ceiling = gCoordinator.CreateEntity();
-  gCoordinator.AddComponent(ceiling, Transform{.translation = T({0.f, MAP_TALLNESS, 0.f})});
-  gCoordinator.AddComponent(ceiling, Renderable{.model = ceilingModel, .shader = TERRAIN, .texture = OFFICE_CEILING});
-  gCoordinator.AddComponent(ceiling, AABB{.dimensions = vec3(width, thickness, height)});
-  gCoordinator.AddComponent(ceiling, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+void createMapCeiling(int mapWidth, int mapHeight, float thickness, int tileScale) {
+  int ceilingWidth = mapWidth / tileScale;
+  int ceilingHeight = mapHeight / tileScale;
+
+  for (int x = 0; x < tileScale; x++) {
+    for (int z = 0; z < tileScale; z++) {
+      createCeiling(x * ceilingWidth, z * ceilingHeight, ceilingWidth, ceilingHeight, thickness, tileScale, 3);
+    }
+
+    /*   Model* ceilingModel = getBoxModel(width, thickness, height, 25);
+      auto ceiling = gCoordinator.CreateEntity();
+      gCoordinator.AddComponent(ceiling, Transform{.translation = T({0.f, MAP_TALLNESS, 0.f})});
+      gCoordinator.AddComponent(ceiling, Renderable{.model = ceilingModel, .shader = TERRAIN, .texture =
+      OFFICE_CEILING}); gCoordinator.AddComponent(ceiling, AABB{.dimensions = vec3(width, thickness, height)});
+      gCoordinator.AddComponent(ceiling, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)}); */
+  }
 }
 
-void createFloor(int mapWidth, int mapHeight, float thickness, int tileScale) {
-  printf("Creating floor\n");
-  printf("Map width: %d, map height: %d, thickness: %f, tile scale: %d\n", mapWidth, mapHeight, thickness, tileScale);
+void createCeiling(GLfloat world_x, GLfloat world_z, int width, int height, float thickness, int tileScale,
+                   int textureScale) {
+  Model* ceilingModel = getBoxModel(height, thickness, width, textureScale);
+  auto ceiling = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(ceiling, Transform{.translation = T({world_x, MAP_TALLNESS, world_z})});
+  gCoordinator.AddComponent(ceiling, Renderable{.model = ceilingModel, .shader = TERRAIN, .texture = OFFICE_CEILING});
+  gCoordinator.AddComponent(ceiling, AABB{.dimensions = vec3(height, thickness, width)});
+  gCoordinator.AddComponent(ceiling, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+};
+
+void createMapFloor(int mapWidth, int mapHeight, float thickness, int tileScale) {
   int floorWidth = mapWidth / tileScale;
   int floorHeight = mapHeight / tileScale;
 
   for (int x = 0; x < tileScale; x++) {
     for (int z = 0; z < tileScale; z++) {
-      Model* floorModel = getBoxModel(floorHeight, thickness, floorWidth, 1);
-      auto floor = gCoordinator.CreateEntity();
-      gCoordinator.AddComponent(floor, Transform{.translation = T({static_cast<GLfloat>(x * floorHeight), -thickness,
-                                                                   static_cast<GLfloat>(z * floorWidth)})});
-      gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
-      gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(floorHeight, thickness, floorWidth)});
-      gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+      createFloor(x * floorWidth, z * floorHeight, floorWidth, floorHeight, thickness, tileScale);
     }
   }
+}
 
-  /*   Model* floorModel = getBoxModel(width, thickness, height, 1);
-    auto floor = gCoordinator.CreateEntity();
-    gCoordinator.AddComponent(floor, Transform{.translation = T({0.f, -thickness, 0.f})});
-    gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
-    gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(width, thickness, height)});
-    gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)}); */
+void createFloor(GLfloat world_x, GLfloat world_z, int width, int height, float thickness, int tileScale,
+                 int textureScale) {
+  Model* floorModel = getBoxModel(height, thickness, width, textureScale);
+  auto floor = gCoordinator.CreateEntity();
+  gCoordinator.AddComponent(floor, Transform{.translation = T({world_x, -thickness, world_z})});
+  gCoordinator.AddComponent(floor, Renderable{.model = floorModel, .shader = TERRAIN, .texture = OFFICE_FLOOR});
+  gCoordinator.AddComponent(floor, AABB{.dimensions = vec3(height, thickness, width)});
+  gCoordinator.AddComponent(floor, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
 }
 
 void createLight(GLfloat world_x, GLfloat world_z, int width, int height, float thickness) {
