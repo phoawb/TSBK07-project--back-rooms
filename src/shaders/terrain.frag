@@ -1,6 +1,6 @@
 #version 150
 
-#define MAX_LIGHTS 100 // Use a define to specify the max number of lights
+#define MAX_LIGHTS 300 // Use a define to specify the max number of lights
 
 out vec4 outColor;
 in vec2 texCoord;
@@ -27,7 +27,7 @@ void main(void) {
     vec3 specular = vec3(0.0);
     float specularExponent = 8.0;
     // ambient, diffuse, specular coefficients
-    float k_a = 1, k_d = 3, k_s = 3; 
+    float k_a = 1, k_d = 0, k_s = 3; 
     // attenuation coefficients
     int a = 1, b = 1, c = 0;
 
