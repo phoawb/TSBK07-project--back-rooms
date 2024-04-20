@@ -1,3 +1,3 @@
 #pragma once
 
-int randRange(int min, int max);
+int randRange(int min, int max, bool isInclusive = false);
