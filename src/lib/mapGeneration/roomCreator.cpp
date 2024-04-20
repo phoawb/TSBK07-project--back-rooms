@@ -105,7 +105,7 @@ bool RoomCreator::isOccupied(std::vector<std::vector<TileType>>& grid, int x, in
     // check if out of bounds
     if (newX < 0 || newX >= (int)grid.size() || newY < 0 || newY >= (int)grid[0].size()) continue;
     // check if occupied
-    if (grid[newX][newY] == type) return true;
+    if (grid[newX][newY] == type || grid[newX][newY] == WALL) return true;
   }
   return false;
 }
@@ -124,36 +124,10 @@ void RoomCreator::createRandPillarRoom(NodePtr room, int pillarSize, int roomTal
   srand(time(NULL));
 
   int maxPillars = gridWidth * gridHeight;
-  int maxLights = 7;
+  int maxLights = 5;
   int maxFailedTries = 1000;
-  int failedTries = 0;
-  int placedPillars = 0;
-  int placedLights = 0;
-  while (placedPillars < maxPillars && failedTries < maxFailedTries) {
-    int x = rand() % gridWidth;
-    int y = rand() % gridHeight;
-    if (isOccupied(grid, x, y, PILLAR)) {
-      failedTries++;
-      continue;
-    }
-    grid[x][y] = PILLAR;
-    placedPillars++;
-    failedTries = 0;
-  }
-  failedTries = 0;
-
-  while (placedLights < maxLights && failedTries < maxFailedTries) {
-    int x = rand() % gridWidth;
-    int y = rand() % gridHeight;
-    if (isOccupied(grid, x, y, LIGHT)) {
-      failedTries++;
-      continue;
-    }
-    grid[x][y] = LIGHT;
-    placedLights++;
-    TOTAL_LIGHTS_ROOM++;
-    failedTries = 0;
-  }
+  placeTileTypes(grid, maxPillars, maxFailedTries, PILLAR);
+  placeTileTypes(grid, maxLights, maxFailedTries, LIGHT);
   // printf("Total lights: %d\n", TOTAL_LIGHTS_ROOM);
 
   for (int y = 0; y < gridHeight; y++) {
@@ -163,9 +137,95 @@ void RoomCreator::createRandPillarRoom(NodePtr room, int pillarSize, int roomTal
       if (grid[x][y] == PILLAR) {
         createPillar(world_x, world_z, pillarSize, roomTallness);
       } else if (grid[x][y] == LIGHT) {
-        // printf("Creating light at %f, %f\n", world_x, world_z);
         createLight(world_x, world_z);
       }
     }
   }
 };
+
+void createWall(worldVec2 coordinates, float width, float height, float depth, float textureScale) {
+  Model* wallModel = getBoxModel(width, height, depth, textureScale);
+  auto wall = gCoordinator.CreateEntity();
+  // printf("Creating wall at %f, %f\n", coordinates.x, coordinates.z);
+  gCoordinator.AddComponent(wall, Transform{.translation = T(coordinates.x, 0, coordinates.z)});
+  gCoordinator.AddComponent(wall, Renderable{.model = wallModel, .shader = TERRAIN, .texture = OFFICE_WALL});
+  gCoordinator.AddComponent(wall, AABB{.dimensions = vec3(depth, height, width)});  // width and depth are flipped :(
+  gCoordinator.AddComponent(wall, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+}
+
+void RoomCreator::createOfficeRoom(NodePtr room, int roomTallness, int gateSize) {
+  // NOTE: width and height are flipped! (width is along the z-axis)
+  int roomWidth = room->getWidth();
+  int roomHeight = room->getHeight();
+  int gridWidth = roomWidth / WALL_THICKNESS;
+  int gridHeight = roomHeight / WALL_THICKNESS;
+  std::vector<std::vector<TileType>> grid(gridWidth, std::vector<TileType>(gridHeight, EMPTY));
+  worldVec2 roomOrigin = {room->bottomLeftCorner.x, room->bottomLeftCorner.y};
+  // create the room walls with passages in the middle
+  // bottom wall 1
+  createWall(roomOrigin, roomWidth / 2.f - gateSize, roomTallness, WALL_THICKNESS, 1);
+  // bottom wall 2
+  createWall({roomOrigin.z + roomWidth / 2.f + gateSize, roomOrigin.x}, roomWidth / 2.f - gateSize, roomTallness,
+             WALL_THICKNESS, 1);
+  // top wall 1
+  createWall({roomOrigin.z, roomOrigin.x + roomHeight - WALL_THICKNESS}, roomWidth / 2.f - gateSize, roomTallness,
+             WALL_THICKNESS, 1);
+  // top wall 2
+  createWall({roomOrigin.z + roomWidth / 2.f + gateSize, roomOrigin.x + roomHeight - WALL_THICKNESS},
+             roomWidth / 2.f - gateSize, roomTallness, WALL_THICKNESS, 1);
+  // left wall 1
+  createWall({roomOrigin.z, roomOrigin.x + WALL_THICKNESS}, WALL_THICKNESS, roomTallness,
+             roomHeight / 2.f - gateSize - WALL_THICKNESS, 1);
+  // left wall 2
+  createWall({roomOrigin.z, roomOrigin.x + roomHeight / 2.f + gateSize - WALL_THICKNESS}, WALL_THICKNESS, roomTallness,
+             roomHeight / 2.f - gateSize - WALL_THICKNESS, 1);
+  // right wall 1
+  createWall({roomOrigin.z + roomWidth - WALL_THICKNESS, roomOrigin.x + WALL_THICKNESS}, WALL_THICKNESS, roomTallness,
+             roomHeight / 2.f - gateSize - WALL_THICKNESS, 1);
+  // right wall 2
+  createWall({roomOrigin.z + roomWidth - WALL_THICKNESS, roomOrigin.x + roomHeight / 2.f + gateSize - WALL_THICKNESS},
+             WALL_THICKNESS, roomTallness, roomHeight / 2.f - gateSize - WALL_THICKNESS, 1);
+  // populate the grid's sides with walls
+  for (int x = 0; x < gridHeight; x++) {
+    for (int z = 0; z < gridWidth; z++)
+      if (z == 0 || z == gridWidth - 1 || x == 0 || x == gridHeight - 1) grid[z][x] = WALL;
+  }
+
+  int maxFailedTries = 1000;
+  int maxPillars = 4;
+  int maxLights = 4;
+  if (roomWidth == MIN_ROOM_SIZE || roomHeight == MIN_ROOM_SIZE) maxPillars = 2, maxLights = 2;
+  placeTileTypes(grid, maxPillars, maxFailedTries, PILLAR);
+  placeTileTypes(grid, maxLights, maxFailedTries, LIGHT);
+
+  for (int x = 0; x < gridHeight; x++) {
+    for (int z = 0; z < gridWidth; z++) {
+      GLfloat world_x = roomOrigin.x + x * WALL_THICKNESS;
+      GLfloat world_z = roomOrigin.z + z * WALL_THICKNESS;
+      if (grid[z][x] == PILLAR) {
+        createPillar(world_x, world_z, WALL_THICKNESS, roomTallness);
+      } else if (grid[z][x] == LIGHT) {
+        createLight(world_x, world_z);
+      }
+    }
+  }
+}
+void RoomCreator::placeTileTypes(std::vector<std::vector<TileType>>& grid, int maxTiles, int maxFailedTries,
+                                 TileType type) {
+  // set seed
+  srand(time(NULL));
+
+  int failedTries = 0;
+  int placedTiles = 0;
+  while (placedTiles < maxTiles && failedTries < maxFailedTries) {
+    int x = rand() % grid.size();
+    int y = rand() % grid[0].size();
+    if (isOccupied(grid, x, y, type)) {
+      failedTries++;
+      continue;
+    }
+    grid[x][y] = type;
+    placedTiles++;
+    failedTries = 0;
+  }
+}

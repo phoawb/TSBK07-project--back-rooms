@@ -69,7 +69,7 @@ void RenderSystem::Init() {
   glEnable(GL_CULL_FACE);
   printError("GL inits");
 
-  renderDistance = 500.0f;
+  renderDistance = 400.0f;
   float far = 1000.0f;
   float near = 0.2f;
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, near, far);

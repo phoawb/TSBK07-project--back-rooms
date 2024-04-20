@@ -19,5 +19,6 @@ enum TextureType {
 
 enum ModelType { SKYBOX, SPHERE, CHAIR, CARTON, SQUARE };
 
-enum TileType { EMPTY, PILLAR, LIGHT };
-enum RoomTypes { RAND_PILLARS };
+enum TileType { EMPTY, PILLAR, LIGHT, WALL };
+enum RoomTypes { RAND_PILLARS, OFFICE_ROOM };
+const int NO_OF_ROOM_TYPES = 2;
