@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
   spawnChair(T(-75, 10, 50), vec3(0.f, 0.5f, 0.0f));
   spawnCarton(T(-75, 10, 40), vec3(0.f, 0.5f, 0.0f)); */
 
-  glutRepeatingTimer(3);
+  glutRepeatingTimer(30);
   glutPassiveMotionFunc(mouse);
   glutMainLoop();
   exit(0);
