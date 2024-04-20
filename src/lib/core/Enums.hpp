@@ -1,6 +1,6 @@
 #pragma once
 
-enum ShaderType { NO_SHADE, TERRAIN, LAMP };
+enum ShaderType { NO_SHADE, TERRAIN, LAMP, ADD, LOWPASS_X, LOWPASS_Y, PLAIN, THRES };
 
 enum TextureType {
   OFFICE_WALL,
@@ -17,7 +17,7 @@ enum TextureType {
   CARTON_TEX
 };
 
-enum ModelType { SKYBOX, SPHERE, CHAIR, CARTON };
+enum ModelType { SKYBOX, SPHERE, CHAIR, CARTON, SQUARE };
 
 enum TileType { EMPTY, PILLAR, LIGHT };
 enum RoomTypes { RAND_PILLARS };

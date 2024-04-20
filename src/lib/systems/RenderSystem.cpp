@@ -102,8 +102,41 @@ void RenderSystem::Init() {
   printError("init RenderSystem");
 }
 
+void RenderSystem::runfilter(GLuint shader, FBOstruct *in1, FBOstruct *in2, FBOstruct *out) {
+  glUseProgram(shader);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  // bind to 0 and 1 because those are coded for in the useFBO function
+  glUniform1i(glGetUniformLocation(shader, "texUnit"), 0);
+  glUniform1i(glGetUniformLocation(shader, "texUnit2"), 1);
+  useFBO(out, in1, in2);
+  auto squareModel = assetManager.getModel(ModelType::SQUARE);
+  DrawModel(squareModel, shader, "in_Position", NULL, "in_TexCoord");
+  glFlush();
+}
+
 void RenderSystem::Update() {
+  auto fbo1 = assetManager.getFBO1();
+  auto fbo2 = assetManager.getFBO2();
+  auto fbo3 = assetManager.getFBO3();
+  auto fbo4 = assetManager.getFBO4();
+
+  // render to fbo1
+  useFBO(fbo1, 0L, 0L);
+
+  // Clear framebuffer and depth buffer
+  glClearColor(0.1, 0.1, 0.3, 0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // Enable Z-buffering
+  glEnable(GL_DEPTH_TEST);
+
+  // Enable backface culling
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+
   drawSkybox();
+  // Draw entities
   for (auto &entity : mEntities) {
     Model *model = gCoordinator.GetComponent<Renderable>(entity).model;
     mat4 trans = gCoordinator.GetComponent<Transform>(entity).translation;
@@ -125,6 +158,32 @@ void RenderSystem::Update() {
     glUniform1i(glGetUniformLocation(shaderId, "texUnit"), texUnit);
     DrawModel(model, shaderId, "inPosition", "inNormal", "inTexCoord");
   }
+  // Activate threshold shader
+  auto thres = assetManager.getShaderId(THRES);
+  runfilter(thres, fbo1, 0L, fbo2);
+
+  // Activate lowpass shader
+  auto lowpassX = assetManager.getShaderId(LOWPASS_X);
+  auto lowpassY = assetManager.getShaderId(LOWPASS_Y);
+  unsigned int amount = 50;
+  for (unsigned int i = 0; i < amount; i++) {
+    runfilter(lowpassY, fbo2, 0L, fbo3);
+    runfilter(lowpassX, fbo3, 0L, fbo2);
+  }
+
+  // activate the add-shader
+  auto add = assetManager.getShaderId(ADD);
+  runfilter(add, fbo1, fbo2, fbo4);
+
+  // Render final scene
+  auto plaintextureshader = assetManager.getShaderId(PLAIN);
+  glUseProgram(plaintextureshader);
+  useFBO(0L, fbo4, fbo2);
+  glClearColor(0.0, 0.0, 0.0, 0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  auto squareModel = assetManager.getModel(ModelType::SQUARE);
+  DrawModel(squareModel, plaintextureshader, "in_Position", NULL, "in_TexCoord");
+
   auto &cameraTransform = gCoordinator.GetComponent<Transform>(mCamera);
   auto &camera = gCoordinator.GetComponent<Camera>(mCamera);
   // upload camera position for phong reasons
