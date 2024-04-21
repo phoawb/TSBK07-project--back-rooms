@@ -47,9 +47,9 @@ void display(void) {
   cameraControlSystem->Update(deltaMouseX, deltaMouseY);
   physicsSystem->Update();
   collisionSystem->Update();
+  lightingSystem->Update();
   renderSystem->Update();
   guiSystem->Update();
-  lightingSystem->Update();
 
   printError("display");
 }
@@ -100,7 +100,7 @@ void spawnChair(mat4 startTrans, vec3 velocity) {
 
 int main(int argc, char** argv) {
   glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
+  glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
   glutInitContextVersion(3, 2);
   glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
   glutCreateWindow("TSBK07 - Project");
@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
   spawnChair(T(-75, 10, 50), vec3(0.f, 0.5f, 0.0f));
   spawnCarton(T(-75, 10, 40), vec3(0.f, 0.5f, 0.0f)); */
 
-  glutRepeatingTimer(3);
+  glutRepeatingTimer(30);
   glutPassiveMotionFunc(mouse);
   glutMainLoop();
   exit(0);
