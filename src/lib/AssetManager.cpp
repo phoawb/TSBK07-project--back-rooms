@@ -19,7 +19,7 @@ void AssetManager::Init() {
   tex2id[OFFICE_WALL] = 10;
 
   glActiveTexture(GL_TEXTURE2);
-  LoadTGATextureSimple("textures/skybox.tga", &skyboxSky);
+  LoadTGATextureSimple("textures/skybox3.tga", &skyboxSky);
   tex2id[SKYBOX_SKY] = 2;
 
   glActiveTexture(GL_TEXTURE3);
@@ -52,7 +52,7 @@ void AssetManager::Init() {
   GLfloat squareTexCoord[] = {0, 0, 0, 1, 1, 1, 1, 0};
   GLuint squareIndices[] = {0, 1, 2, 0, 2, 3};
 
-  modelType2Model[SKYBOX] = LoadModelPlus("objects/skybox.obj");
+  modelType2Model[SKYBOX] = LoadModelPlus("objects/skybox3.obj");
   modelType2Model[SPHERE] = LoadModelPlus("objects/groundsphere.obj");
   modelType2Model[CHAIR] = LoadModelPlus("objects/chair.obj");
   modelType2Model[CARTON] = LoadModelPlus("objects/carton.obj");

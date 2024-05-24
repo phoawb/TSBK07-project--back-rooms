@@ -46,6 +46,7 @@ void MapCreator::createMap() {
   // create ceiling
   float ceilingThickness = 4;
   createMapCeiling(mapWidth, mapHeight, ceilingThickness);
+  createMapWalls(mapWidth, mapHeight, 2.f);
 }
 
 void MapCreator::createFloorModel(vec2 origin, int width, int height, TextureType textureType) {

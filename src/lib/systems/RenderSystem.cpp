@@ -69,8 +69,8 @@ void RenderSystem::Init() {
   glEnable(GL_CULL_FACE);
   printError("GL inits");
 
-  renderDistance = 400.0f;
-  float far = 1000.0f;
+  renderDistance = 700.0f;
+  float far = 5000.0f;
   float near = 0.2f;
   projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, near, far);
 
@@ -165,7 +165,7 @@ void RenderSystem::Update() {
   // Activate lowpass shader
   auto lowpassX = assetManager.getShaderId(LOWPASS_X);
   auto lowpassY = assetManager.getShaderId(LOWPASS_Y);
-  unsigned int amount = 50;
+  unsigned int amount = 30;
   for (unsigned int i = 0; i < amount; i++) {
     runfilter(lowpassY, fbo2, 0L, fbo3);
     runfilter(lowpassX, fbo3, 0L, fbo2);
