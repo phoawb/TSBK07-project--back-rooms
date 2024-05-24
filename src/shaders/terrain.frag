@@ -19,12 +19,12 @@ uniform int isDirectional[MAX_LIGHTS];
 
 void main(void) {
     vec3 finalShade = vec3(0.0);
-    vec3 ambient = vec3(0.3);
+    vec3 ambient = vec3(0.5);
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
     float specularExponent = 32.0;
     // ambient, diffuse, specular coefficients
-    float k_a = 1, k_d = 1, k_s = 2; 
+    float k_a = 1, k_d = 1, k_s = 1; 
     // attenuation coefficients
     int a = 1, b = 1, c = 0;
 
