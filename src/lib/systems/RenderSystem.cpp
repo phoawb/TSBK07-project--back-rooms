@@ -165,7 +165,7 @@ void RenderSystem::Update() {
   // Activate lowpass shader
   auto lowpassX = assetManager.getShaderId(LOWPASS_X);
   auto lowpassY = assetManager.getShaderId(LOWPASS_Y);
-  unsigned int amount = 50;
+  unsigned int amount = 30;
   for (unsigned int i = 0; i < amount; i++) {
     runfilter(lowpassY, fbo2, 0L, fbo3);
     runfilter(lowpassX, fbo3, 0L, fbo2);
