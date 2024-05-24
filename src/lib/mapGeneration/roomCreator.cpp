@@ -151,6 +151,15 @@ void createWall(worldVec2 coordinates, float width, float height, float depth, f
   gCoordinator.AddComponent(wall, Renderable{.model = wallModel, .shader = TERRAIN, .texture = OFFICE_WALL});
   gCoordinator.AddComponent(wall, AABB{.dimensions = vec3(depth, height, width)});  // width and depth are flipped :(
   gCoordinator.AddComponent(wall, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
+
+  Model* moldingModel =
+      getBoxModel(width + MOLDING_DEPTH * 2, MOLDING_HEIGHT - 0.5, depth + MOLDING_DEPTH * 2, textureScale);
+  auto molding = gCoordinator.CreateEntity();
+  // printf("Creating wall at %f, %f\n", coordinates.x, coordinates.z);
+  gCoordinator.AddComponent(
+      molding, Transform{.translation = T(coordinates.x - MOLDING_DEPTH, 0, coordinates.z - MOLDING_DEPTH)});
+  gCoordinator.AddComponent(molding, Renderable{.model = moldingModel, .shader = TERRAIN, .texture = OFFWHITE});
+  gCoordinator.AddComponent(molding, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
 }
 
 void createMapWalls(int mapWidth, int mapheight, float wallThickness) {
