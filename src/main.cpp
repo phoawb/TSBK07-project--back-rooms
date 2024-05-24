@@ -24,7 +24,7 @@
 #include "systems/RenderSystem.hpp"
 #include "vector"
 
-int WINDOW_SIZE = 600;
+int WINDOW_SIZE = 800;
 
 std::__1::shared_ptr<RenderSystem> renderSystem;
 std::__1::shared_ptr<CameraControlSystem> cameraControlSystem;
@@ -49,7 +49,7 @@ void display(void) {
   collisionSystem->Update();
   lightingSystem->Update();
   renderSystem->Update();
-  guiSystem->Update();
+  // guiSystem->Update();
 
   printError("display");
 }
