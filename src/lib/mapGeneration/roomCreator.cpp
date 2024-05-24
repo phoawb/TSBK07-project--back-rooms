@@ -153,6 +153,17 @@ void createWall(worldVec2 coordinates, float width, float height, float depth, f
   gCoordinator.AddComponent(wall, RigidBody{.isStatic = true, .velocity = vec3(0), .acceleration = vec3(0)});
 }
 
+void createMapWalls(int mapWidth, int mapheight, float wallThickness) {
+  int individualWallLength{20};
+  int noOfWalls = mapWidth / individualWallLength;
+  for (int i = 0; i < noOfWalls; i++) {
+    createWall(worldVec2(i * individualWallLength, 0), individualWallLength, MAP_TALLNESS, wallThickness, 1.f);
+    createWall(worldVec2(i * individualWallLength, mapheight), individualWallLength, MAP_TALLNESS, wallThickness, 1.f);
+    createWall(worldVec2(0, i * individualWallLength), wallThickness, MAP_TALLNESS, individualWallLength, 1.f);
+    createWall(worldVec2(mapWidth, i * individualWallLength), wallThickness, MAP_TALLNESS, individualWallLength, 1.f);
+  }
+}
+
 void RoomCreator::createOfficeRoom(NodePtr room, int roomTallness, int gateSize) {
   // NOTE: width and height are flipped! (width is along the z-axis)
   int roomWidth = room->getWidth();

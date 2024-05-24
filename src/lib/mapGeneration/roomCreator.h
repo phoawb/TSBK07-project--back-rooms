@@ -21,3 +21,4 @@ void createMapFloor(int mapWidth, int mapHeight, float thickness, int tileScale 
 void createFloor(GLfloat world_x, GLfloat world_z, int width, int height, float thickness, int tileScale,
                  int textureScale = 1);
 void createLight(GLfloat world_x, GLfloat world_z, int width = 10, int height = 10, float thickness = 0.3);
+void createMapWalls(int mapWidth, int mapheight, float wallThickness);
